@@ -1,4 +1,4 @@
-use crate::order::{order::Order, self};
+use crate::order::order::Order;
 use std::{
     collections::VecDeque,
     sync::{Arc, Mutex},

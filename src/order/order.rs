@@ -27,4 +27,20 @@ impl Order {
     pub fn get_order_number(&self) -> u32 {
         self.order_number
     }
+
+    pub fn get_coffee_amount(&self) -> u32 {
+        self.coffee_amount
+    }
+
+    pub fn get_cocoa_amount(&self) -> u32 {
+        self.cocoa_amount
+    }
+
+    pub fn get_milk_foam_amount(&self) -> u32 {
+        self.milk_foam_amount
+    }
+
+    pub fn get_water_amount(&self) -> u32 {
+        self.water_amount
+    }
 }

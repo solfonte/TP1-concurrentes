@@ -1,4 +1,6 @@
-use crate::{coffee_maker::dispenser::Dispenser, order::order::Order};
+use crate::{
+    coffee_maker::container::Container, coffee_maker::dispenser::Dispenser, order::order::Order,
+};
 use std::{
     collections::VecDeque,
     sync::{Arc, Condvar, Mutex},
@@ -7,27 +9,25 @@ use std::{
 use std_semaphore::Semaphore;
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 pub struct CoffeeMaker {
-    grain_container: Arc<(Mutex<u32>, Condvar)>,
-    ground_coffee_container: Arc<(Mutex<u32>, Condvar)>,
-    milk_container: Arc<(Mutex<u32>, Condvar)>,
-    milk_foam_container: Arc<(Mutex<u32>, Condvar)>,
-    cocoa_container: Arc<(Mutex<u32>, Condvar)>,
-    water_container: Arc<(Mutex<u32>, Condvar)>,
+    grain_container: Arc<Container>,
+    ground_coffee_container: Arc<Container>,
+    milk_container: Arc<Container>,
+    milk_foam_container: Arc<Container>,
+    cocoa_container: Arc<Container>,
+    water_container: Arc<Container>,
     dispenser_amount: u32,
-    dispenser_vec: Vec<JoinHandle<()>>,
 }
 
 impl CoffeeMaker {
     pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
         Self {
-            grain_container: Arc::new((Mutex::new(g), Condvar::new())),
-            ground_coffee_container: Arc::new((Mutex::new(m), Condvar::new())),
-            milk_container: Arc::new((Mutex::new(l), Condvar::new())),
-            milk_foam_container: Arc::new((Mutex::new(e), Condvar::new())),
-            cocoa_container: Arc::new((Mutex::new(c), Condvar::new())),
-            water_container: Arc::new((Mutex::new(a), Condvar::new())),
+            grain_container: Arc::new(Container::new(g)),
+            ground_coffee_container: Arc::new(Container::new(m)),
+            milk_container: Arc::new(Container::new(l)),
+            milk_foam_container: Arc::new(Container::new(e)),
+            cocoa_container: Arc::new(Container::new(c)),
+            water_container: Arc::new(Container::new(a)),
             dispenser_amount: n,
-            dispenser_vec: Vec::new(),
         }
     }
 
@@ -36,6 +36,8 @@ impl CoffeeMaker {
         order_queue_mutex: Arc<Mutex<VecDeque<Order>>>,
         order_queue_semaphore: Arc<Semaphore>,
     ) {
+        let mut dispenser_vec = Vec::new();
+
         for i in 0..self.dispenser_amount {
             let order_queue_mutex_clone = order_queue_mutex.clone();
             let order_queue_semaphore_clone = order_queue_semaphore.clone();
@@ -43,9 +45,11 @@ impl CoffeeMaker {
             let milk_foam_container_clone = self.milk_foam_container.clone();
             let water_container_clone = self.water_container.clone();
             let cocoa_container_clone = self.cocoa_container.clone();
-            self.dispenser_vec.push(thread::spawn(move || {
+
+            dispenser_vec.push(thread::spawn(move || {
                 println!("[dispenser {i}] turned on");
                 let dispenser = Dispenser::new(
+                    i,
                     ground_coffe_container_clone,
                     milk_foam_container_clone,
                     water_container_clone,
@@ -68,6 +72,10 @@ impl CoffeeMaker {
                     dispenser.prepare_order(order);
                 }
             }))
+        }
+
+        for handle in dispenser_vec {
+            handle.join().unwrap();
         }
     }
 }

@@ -73,9 +73,9 @@ impl CoffeeMaker {
                 }
             }))
         }
-
+        /* TODO: join pero sino SE TRABA
         for handle in dispenser_vec {
             handle.join().unwrap();
-        }
+        }*/
     }
 }

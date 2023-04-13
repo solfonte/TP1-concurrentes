@@ -1,4 +1,4 @@
-use crate::{coffee_maker::container::Container, order::order::Order};
+use crate::{coffee_maker::{container::Container}, order::order::Order};
 use std::sync::{Arc, Condvar, Mutex};
 
 pub struct Dispenser {
@@ -26,32 +26,31 @@ impl Dispenser {
         }
     }
 
-    pub fn prepare_order(&self, order: Order) {
-        // empiezo a ver tema de recursos. TODO: ver si se hace concurrente
-        let coffee_amount_required = order.get_coffee_amount();
-        if coffee_amount_required > 0 {
-            let coffee_taken = self.ground_coffee_container.extract(coffee_amount_required);
+    pub fn dispense_ingredient(&self, ingredient_amount: u32, container: &Container) {
+        if ingredient_amount > 0 {
+
+            let ingredient_taken = container.extract(ingredient_amount);
             // sleep
             println!(
-                "[Dispenser {}] needed {} and took {} coffee",
-                self.dispenser_number, coffee_amount_required, coffee_taken
+                "[Dispenser {}] needed {} and took {} ingredient",
+                self.dispenser_number, ingredient_amount, ingredient_taken
             );
         }
+    }
+
+    pub fn prepare_order(&self, order: Order) {
+
+        let coffee_amount_required = order.get_coffee_amount();
+        self.dispense_ingredient(coffee_amount_required, &self.ground_coffee_container);
+        
         let cocoa_amount_required = order.get_cocoa_amount();
-        if cocoa_amount_required > 0 {
-            let cocoa_taken = self.cocoa_container.extract(cocoa_amount_required);
-            // sleep
-        }
+        self.dispense_ingredient(cocoa_amount_required, &self.cocoa_container);
+        
         let milk_foam_amount_required = order.get_milk_foam_amount();
-        if milk_foam_amount_required > 0 {
-            let milk_foam_taken = self.milk_foam_container.extract(milk_foam_amount_required);
-            // sleep
-        }
+        self.dispense_ingredient(milk_foam_amount_required, &self.milk_foam_container);
+        
         let water_amount_required = order.get_water_amount();
-        if water_amount_required > 0 {
-            let water_amount = self.water_container.extract(water_amount_required);
-            // agarro agua
-        }
-        //cuando se termina la imprimo.
+        self.dispense_ingredient(water_amount_required, &self.water_container);
+        
     }
 }

@@ -1,5 +1,7 @@
 use crate::{
-    coffee_maker::{container::Container, dispenser::Dispenser},
+    coffee_maker::{
+        container::Container, container_controller::ContainerController, dispenser::Dispenser,
+    },
     order::order::Order,
 };
 use std::{
@@ -8,26 +10,23 @@ use std::{
     thread::{self, JoinHandle},
 };
 use std_semaphore::Semaphore;
+
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 pub struct CoffeeMaker {
-    grain_container: Arc<Container>,
-    ground_coffee_container: Arc<Container>,
-    milk_container: Arc<Container>,
-    milk_foam_container: Arc<Container>,
-    cocoa_container: Arc<Container>,
-    water_container: Arc<Container>,
+    coffee_controller: Arc<ContainerController>,
+    foam_controller: Arc<ContainerController>,
+    cocoa_controller: Arc<ContainerController>,
+    water_controller: Arc<ContainerController>,
     dispenser_amount: u32,
 }
 
 impl CoffeeMaker {
     pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
         Self {
-            grain_container: Arc::new(Container::new(g, String::from("granos"))),
-            ground_coffee_container: Arc::new(Container::new(m, String::from("cafe"))),
-            milk_container: Arc::new(Container::new(l, String::from("milk"))),
-            milk_foam_container: Arc::new(Container::new(e, String::from("espuma"))),
-            cocoa_container: Arc::new(Container::new(c, String::from("cacao"))),
-            water_container: Arc::new(Container::new(a, String::from("agua"))),
+            coffee_controller: Arc::new(ContainerController::new(g, m, String::from("Coffe"))),
+            foam_controller: Arc::new(ContainerController::new(l, e, String::from("Foam"))),
+            cocoa_controller: Arc::new(ContainerController::new(c, 0, String::from("Cocoa"))),
+            water_controller: Arc::new(ContainerController::new(a, 0, String::from("Water"))),
             dispenser_amount: n,
         }
     }
@@ -42,19 +41,19 @@ impl CoffeeMaker {
         for i in 0..self.dispenser_amount {
             let order_queue_mutex_clone = order_queue_mutex.clone();
             let order_queue_semaphore_clone = order_queue_semaphore.clone();
-            let ground_coffe_container_clone = self.ground_coffee_container.clone();
-            let milk_foam_container_clone = self.milk_foam_container.clone();
-            let water_container_clone = self.water_container.clone();
-            let cocoa_container_clone = self.cocoa_container.clone();
+            let coffee_controller_clone = self.coffee_controller.clone();
+            let foam_controller_clone = self.foam_controller.clone();
+            let water_controller_clone = self.water_controller.clone();
+            let cocoa_controller_clone = self.cocoa_controller.clone();
 
             dispenser_vec.push(thread::spawn(move || {
                 println!("[dispenser {i}] turned on");
                 let dispenser = Dispenser::new(
                     i,
-                    ground_coffe_container_clone,
-                    milk_foam_container_clone,
-                    water_container_clone,
-                    cocoa_container_clone,
+                    coffee_controller_clone,
+                    foam_controller_clone,
+                    water_controller_clone,
+                    cocoa_controller_clone,
                 );
                 loop {
                     order_queue_semaphore_clone.acquire();

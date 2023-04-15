@@ -38,14 +38,13 @@ impl Container {
                     || (!state.busy && state.is_on && state.amount < extraction)
             }) {
                 println!("[container {}] {:?}", self.name, *system);
-                
+
                 (*system).busy = true;
 
                 if !(*system).is_on {
                     result = Ok(0);
                 } else {
                     (*system).amount -= extraction;
-
                 }
 
                 if (*system).amount == 0 {

@@ -1,5 +1,6 @@
 use crate::{
-    coffee_maker::container::Container, coffee_maker::dispenser::Dispenser, order::order::Order,
+    coffee_maker::{container::Container, dispenser::Dispenser},
+    order::order::Order,
 };
 use std::{
     collections::VecDeque,
@@ -21,12 +22,12 @@ pub struct CoffeeMaker {
 impl CoffeeMaker {
     pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
         Self {
-            grain_container: Arc::new(Container::new(g)),
-            ground_coffee_container: Arc::new(Container::new(m)),
-            milk_container: Arc::new(Container::new(l)),
-            milk_foam_container: Arc::new(Container::new(e)),
-            cocoa_container: Arc::new(Container::new(c)),
-            water_container: Arc::new(Container::new(a)),
+            grain_container: Arc::new(Container::new(g, String::from("granos"))),
+            ground_coffee_container: Arc::new(Container::new(m, String::from("cafe"))),
+            milk_container: Arc::new(Container::new(l, String::from("milk"))),
+            milk_foam_container: Arc::new(Container::new(e, String::from("espuma"))),
+            cocoa_container: Arc::new(Container::new(c, String::from("cacao"))),
+            water_container: Arc::new(Container::new(a, String::from("agua"))),
             dispenser_amount: n,
         }
     }
@@ -55,27 +56,37 @@ impl CoffeeMaker {
                     water_container_clone,
                     cocoa_container_clone,
                 );
-
                 loop {
                     order_queue_semaphore_clone.acquire();
                     let order;
-
                     if let Ok(mut order_queue) = order_queue_mutex_clone.lock() {
-                        order = order_queue.pop_front().unwrap();
-                        println!(
-                            "[dispenser number {i}] Order number {:?}",
-                            order.get_order_number()
-                        );
+                        if let Some(_order) = order_queue.pop_front() {
+                            //TODO: ver que otros resultaos tiene
+                            order = _order;
+                            println!(
+                                "[dispenser number {i}] Order number {:?}",
+                                order.get_order_number()
+                            );
+                        } else {
+                            println!("Se ejecuto el break porque hubo error");
+                            break;
+                        }
                     } else {
-                        break; //TODO: manejar error
+                        println!("Se ejecuto el break porque hubo error");
+                        break;
                     }
-                    dispenser.prepare_order(order);
+                    if let Err(msg) = dispenser.prepare_order(order) {
+                        println!("[OUT from dispenser {}] {} ", i, msg);
+                    }
                 }
+                i
             }))
         }
-        /* TODO: join pero sino SE TRABA
+
         for handle in dispenser_vec {
-            handle.join().unwrap();
-        }*/
+            if let Ok(dispenser_number) = handle.join() {
+                println!("[dispenser {}] turned off", dispenser_number);
+            }
+        }
     }
 }

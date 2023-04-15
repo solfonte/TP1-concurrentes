@@ -14,7 +14,6 @@ const E: u32 = 30;
 const C: u32 = 30;
 const A: u32 = 30;
 
-
 fn main() {
     let mut coffee_maker = CoffeeMaker::new(G, M, L, E, C, A, N);
     let robot = Robot::new();
@@ -23,7 +22,11 @@ fn main() {
     let order_queue_mutex = Arc::new(Mutex::new(order_queue));
     let order_semaphore = Arc::new(Semaphore::new(0));
 
-    coffee_maker.turn_on(order_queue_mutex.clone(), order_semaphore.clone());
+    let order_queue_clone = order_queue_mutex.clone();
+    let order_semaphore_clone = order_semaphore.clone();
+    let coffe_make_handle = thread::spawn(move || {
+        coffee_maker.turn_on(order_queue_clone, order_semaphore_clone);
+    });
 
     let order_preparation_handle = thread::spawn(move || {
         for i in 0..20 {
@@ -33,6 +36,6 @@ fn main() {
             robot.queue_order(order, order_queue_mutex_clone, order_semaphore_clone);
         }
     });
-
+    coffe_make_handle.join().unwrap();
     order_preparation_handle.join().unwrap();
 }

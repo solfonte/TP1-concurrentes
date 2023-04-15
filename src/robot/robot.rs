@@ -1,7 +1,9 @@
-use std::{sync::{Mutex, Arc}, collections::VecDeque};
-use std_semaphore::Semaphore;
 use crate::order::order::Order;
-
+use std::{
+    collections::VecDeque,
+    sync::{Arc, Mutex},
+};
+use std_semaphore::Semaphore;
 
 pub struct Robot {}
 
@@ -16,7 +18,7 @@ impl Robot {
         for j in order.split(";") {
             order_vec.push(j.parse::<u32>().unwrap())
         }
-    
+
         Order::new(
             order_number,
             order_vec[0],

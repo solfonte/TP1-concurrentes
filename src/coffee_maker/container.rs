@@ -3,6 +3,8 @@ use std::{
     sync::{Arc, Condvar, Mutex},
 };
 
+use super::recharge_state::RechargeState;
+
 #[derive(Debug)]
 pub struct System {
     max_capacity: u32,
@@ -14,10 +16,11 @@ pub struct Container {
     /* cantidad actual, is_on, is_busy */
     pair: Arc<(Mutex<System>, Condvar)>,
     name: String,
+    recharge_state: RechargeState,
 }
 
 impl Container {
-    pub fn new(max_capacity: u32, name: String) -> Self {
+    pub fn new(max_capacity: u32, name: String, recharge_state: RechargeState) -> Self {
         Self {
             pair: Arc::new((
                 Mutex::new(System {
@@ -29,29 +32,24 @@ impl Container {
                 Condvar::new(),
             )),
             name,
+            recharge_state,
         }
     }
-
 
     pub fn get_resource_info(&self) -> (u32, u32) {
         let mut max_capacity = 0;
         let mut available_resource = 0;
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy
-            }) {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
                 (*system).busy = true;
                 max_capacity = (*system).max_capacity;
                 available_resource = (*system).amount;
                 (*system).busy = false;
-
             }
         }
         self.pair.1.notify_all();
         (max_capacity, available_resource)
-
     }
-
 
     pub fn extract(&self, extraction: u32) -> Result<u32, &str> {
         let mut result = Ok(extraction);

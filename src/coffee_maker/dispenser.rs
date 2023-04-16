@@ -53,21 +53,25 @@ impl Dispenser {
         //  -> devuelve que me dio bien el ingrediente
         let coffee_amount_required = order.get_coffee_amount();
         if coffee_amount_required > 0 {
-            if let Err(msg) = self.dispense_ingredient(coffee_amount_required, &self.coffee_container) {
+            if let Err(msg) =
+                self.dispense_ingredient(coffee_amount_required, &self.coffee_container)
+            {
                 return Err(String::from(msg));
             }
         }
 
         let cocoa_amount_required = order.get_cocoa_amount();
         if cocoa_amount_required > 0 {
-            if let Err(msg) = self.dispense_ingredient(cocoa_amount_required, &self.cocoa_container) {
+            if let Err(msg) = self.dispense_ingredient(cocoa_amount_required, &self.cocoa_container)
+            {
                 return Err(String::from(msg));
             }
         }
 
         let milk_foam_amount_required = order.get_milk_foam_amount();
-        if milk_foam_amount_required > 0{
-            if let Err(msg) = self.dispense_ingredient(milk_foam_amount_required, &self.foam_container)
+        if milk_foam_amount_required > 0 {
+            if let Err(msg) =
+                self.dispense_ingredient(milk_foam_amount_required, &self.foam_container)
             {
                 return Err(String::from(msg));
             }
@@ -75,7 +79,8 @@ impl Dispenser {
 
         let water_amount_required = order.get_water_amount();
         if water_amount_required > 0 {
-            if let Err(msg) = self.dispense_ingredient(water_amount_required, &self.water_container) {
+            if let Err(msg) = self.dispense_ingredient(water_amount_required, &self.water_container)
+            {
                 return Err(String::from(msg));
             }
         }

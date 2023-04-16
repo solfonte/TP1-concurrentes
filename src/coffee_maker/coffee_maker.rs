@@ -4,18 +4,14 @@ use crate::{
 };
 use std::{
     collections::VecDeque,
-    sync::{Arc, Condvar, Mutex},
+    sync::{Arc, Mutex},
     thread::{self, JoinHandle},
 };
 use std_semaphore::Semaphore;
 
-use super::{
-    container_controller::{
-        ContainerController, ContainerRechargerController, NormalContainerController,
-        WaterNetworkController,
-    },
-    recharge_state::RechargeState,
-};
+use super::{container_controller::{
+        ContainerController,
+    }, container_rechargeable_container::ContainerRechargerController, normal_container_controller::NormalContainerController, water_network_controller::WaterNetworkController};
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 pub struct CoffeeMaker {
     grain_container: Arc<Container>,
@@ -32,12 +28,10 @@ impl CoffeeMaker {
         let grain_container = Arc::new(Container::new(
             g,
             String::from("granos"),
-            RechargeState::new(false, None),
         ));
         let milk_container = Arc::new(Container::new(
             l,
             String::from("milk"),
-            RechargeState::new(false, None),
         ));
         let grain_container_clone = grain_container.clone();
         let milk_container_clone = milk_container.clone();
@@ -47,23 +41,19 @@ impl CoffeeMaker {
             ground_coffee_container: Arc::new(Container::new(
                 m,
                 String::from("cafe"),
-                RechargeState::new(true, Some(grain_container_clone)),
             )),
             milk_container,
             milk_foam_container: Arc::new(Container::new(
                 e,
                 String::from("espuma"),
-                RechargeState::new(true, Some(milk_container_clone)),
             )),
             cocoa_container: Arc::new(Container::new(
                 c,
                 String::from("cacao"),
-                RechargeState::new(false, None),
             )),
             water_container: Arc::new(Container::new(
                 a,
                 String::from("agua"),
-                RechargeState::new(false, None),
             )),
             dispenser_amount: n,
         }

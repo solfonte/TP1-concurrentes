@@ -3,7 +3,6 @@ use std::{
     sync::{Arc, Condvar, Mutex},
 };
 
-use super::recharge_state::RechargeState;
 
 #[derive(Debug)]
 pub struct System {
@@ -16,11 +15,10 @@ pub struct Container {
     /* cantidad actual, is_on, is_busy */
     pair: Arc<(Mutex<System>, Condvar)>,
     name: String,
-    recharge_state: RechargeState,
 }
 
 impl Container {
-    pub fn new(max_capacity: u32, name: String, recharge_state: RechargeState) -> Self {
+    pub fn new(max_capacity: u32, name: String) -> Self {
         Self {
             pair: Arc::new((
                 Mutex::new(System {
@@ -32,7 +30,6 @@ impl Container {
                 Condvar::new(),
             )),
             name,
-            recharge_state,
         }
     }
 

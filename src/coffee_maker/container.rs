@@ -3,7 +3,6 @@ use std::{
     sync::{Arc, Condvar, Mutex},
 };
 
-
 #[derive(Debug)]
 pub struct System {
     max_capacity: u32,

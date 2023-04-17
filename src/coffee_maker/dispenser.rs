@@ -1,7 +1,12 @@
 use crate::{coffee_maker::container::Container, order::order::Order};
 use std::sync::{Arc, Condvar, Mutex};
 
-use super::container_rechargeable_container::ContainerRechargerController;
+use super::{
+    container_rechargeable_controller::ContainerRechargerController,
+    network_rechargeable_container::NetworkRechargeableContainer,
+    rechargeable_container::RechargeableContainer,
+    unrechargeable_container::UnrechargeableContainer,
+};
 
 pub struct Dispenser {
     dispenser_number: u32,
@@ -12,29 +17,10 @@ impl Dispenser {
         Self { dispenser_number }
     }
 
-    pub fn dispense_unchargeable_resource(
+    pub fn dispense_resource<T: Container>(
         &self,
         ingredient_amount: u32,
-        container: &Container,
-    ) -> Result<u32, &str> {
-        let extraction_result = container.extract(ingredient_amount);
-        match extraction_result {
-            Ok(ingredient_taken) => {
-                // sleep
-                return Ok(ingredient_taken);
-            }
-            Err(msg) => {
-                println!("[Error extracting]{msg}");
-                return Err("");
-            }
-        }
-    }
-
-    pub fn dispense_rechargeable_resource(
-        &self,
-        ingredient_amount: u32,
-        container: &Container,
-        container_controller: &ContainerRechargerController,
+        container: &T,
     ) -> Result<u32, &str> {
         let extraction_result = container.extract(ingredient_amount);
         match extraction_result {
@@ -52,10 +38,10 @@ impl Dispenser {
     pub fn prepare_order(
         &self,
         order: Order,
-        coffee_container: Arc<Container>,
-        foam_container: Arc<Container>,
-        water_container: Arc<Container>,
-        cocoa_container: Arc<Container>,
+        coffee_container: &RechargeableContainer,
+        foam_container: &RechargeableContainer,
+        water_container: &NetworkRechargeableContainer,
+        cocoa_container: &UnrechargeableContainer,
         grain_controller: &ContainerRechargerController,
         milk_controller: &ContainerRechargerController,
     ) -> Result<u32, String> {
@@ -64,40 +50,28 @@ impl Dispenser {
         //  -> devuelve que me dio bien el ingrediente
         let coffee_amount_required = order.get_coffee_amount();
         if coffee_amount_required > 0 {
-            if let Err(msg) = self.dispense_rechargeable_resource(
-                coffee_amount_required,
-                &coffee_container,
-                grain_controller,
-            ) {
+            if let Err(msg) = self.dispense_resource(coffee_amount_required, coffee_container) {
                 return Err(String::from(msg));
             }
         }
 
         let cocoa_amount_required = order.get_cocoa_amount();
         if cocoa_amount_required > 0 {
-            if let Err(msg) =
-                self.dispense_unchargeable_resource(cocoa_amount_required, &cocoa_container)
-            {
+            if let Err(msg) = self.dispense_resource(cocoa_amount_required, cocoa_container) {
                 return Err(String::from(msg));
             }
         }
 
         let milk_foam_amount_required = order.get_milk_foam_amount();
         if milk_foam_amount_required > 0 {
-            if let Err(msg) = self.dispense_rechargeable_resource(
-                milk_foam_amount_required,
-                &foam_container,
-                milk_controller,
-            ) {
+            if let Err(msg) = self.dispense_resource(milk_foam_amount_required, foam_container) {
                 return Err(String::from(msg));
             }
         }
 
         let water_amount_required = order.get_water_amount();
         if water_amount_required > 0 {
-            if let Err(msg) =
-                self.dispense_unchargeable_resource(water_amount_required, &water_container)
-            {
+            if let Err(msg) = self.dispense_resource(water_amount_required, water_container) {
                 return Err(String::from(msg));
             }
         }

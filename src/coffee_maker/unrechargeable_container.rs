@@ -18,24 +18,20 @@ pub struct UnrechargeableContainer {
 
 impl Container for UnrechargeableContainer {
     fn extract(&self, extraction: u32) -> Result<u32, &str> {
-        let mut result = Ok(extraction);
+        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
                 (state.busy && state.is_on)
-                    || (!state.busy && state.is_on && state.amount < extraction)
             }) {
                 println!("[container {}] {:?}", self.name, *system);
 
                 (*system).busy = true;
 
-                if !(*system).is_on {
+                if (*system).amount < extraction {
                     result = Ok(0);
                 } else {
                     (*system).amount -= extraction;
-                }
-
-                if (*system).amount == 0 {
-                    (*system).is_on = false;
+                    result = Ok(extraction);
                 }
 
                 (*system).busy = false;

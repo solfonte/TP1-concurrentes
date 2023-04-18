@@ -1,6 +1,6 @@
 use crate::{
     coffee_maker::{
-        container::Container, dispenser::Dispenser,
+        dispenser::Dispenser,
         network_rechargeable_container::NetworkRechargeableContainer,
         rechargeable_container::RechargeableContainer,
         unrechargeable_container::UnrechargeableContainer,
@@ -9,12 +9,12 @@ use crate::{
 };
 use std::{
     collections::VecDeque,
-    sync::{Arc, Mutex, WaitTimeoutResult},
+    sync::{Arc, Mutex},
     thread::{self, JoinHandle},
 };
 use std_semaphore::Semaphore;
 
-use super::container_rechargeable_controller::ContainerRechargerController;
+use super::{container_rechargeable_controller::ContainerRechargerController, provider_container::ProviderContainer};
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 
 fn start_dispenser(
@@ -25,14 +25,10 @@ fn start_dispenser(
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
     water_container: Arc<NetworkRechargeableContainer>,
-    grain_controller: Arc<ContainerRechargerController>,
-    milk_controller: Arc<ContainerRechargerController>,
 ) -> JoinHandle<u32> {
     thread::spawn(move || {
         println!("[dispenser {dispenser_number}] turned on");
         let dispenser = Dispenser::new(dispenser_number);
-        let grain_controller_clone = grain_controller.clone();
-        let milk_controller_clone = milk_controller.clone();
         let ground_coffee_container_clone = ground_coffee_container.clone();
         let milk_foam_container_clone = milk_foam_container.clone();
         let water_container_clone = water_container.clone();
@@ -62,8 +58,6 @@ fn start_dispenser(
                 &milk_foam_container_clone,
                 &water_container_clone,
                 &cocoa_container,
-                &grain_controller_clone,
-                &milk_controller_clone,
             ) {
                 println!("[OUT from dispenser {}] {} ", dispenser_number, msg);
             }
@@ -98,8 +92,8 @@ impl CoffeeMaker {
 
     fn turn_dispensers_on(
         &self,
-        grain_container: Arc<UnrechargeableContainer>,
-        milk_container: Arc<UnrechargeableContainer>,
+        grain_container: Arc<ProviderContainer>,
+        milk_container: Arc<ProviderContainer>,
         ground_coffee_container: Arc<RechargeableContainer>,
         milk_foam_container: Arc<RechargeableContainer>,
         cocoa_container: Arc<UnrechargeableContainer>,
@@ -108,9 +102,6 @@ impl CoffeeMaker {
         order_queue_semaphore: &Arc<Semaphore>,
     ) -> Vec<JoinHandle<u32>> {
         let mut dispenser_handles = Vec::new();
-        let grain_controller = Arc::new(ContainerRechargerController::new(grain_container.clone()));
-
-        let milk_controller = Arc::new(ContainerRechargerController::new(milk_container.clone()));
         for i in 0..self.dispenser_amount {
             let dispenser_handle = start_dispenser(
                 i,
@@ -120,8 +111,6 @@ impl CoffeeMaker {
                 milk_foam_container.clone(),
                 cocoa_container.clone(),
                 water_container.clone(),
-                grain_controller.clone(),
-                milk_controller.clone(),
             );
             dispenser_handles.push(dispenser_handle)
         }
@@ -133,23 +122,23 @@ impl CoffeeMaker {
         order_queue_mutex: Arc<Mutex<VecDeque<Order>>>,
         order_queue_semaphore: Arc<Semaphore>,
     ) {
-        let grain_container = Arc::new(UnrechargeableContainer::new(
+        let grain_container = Arc::new(ProviderContainer::new(
             self.max_grain_capacity,
             String::from("granos"),
         ));
-        let milk_container = Arc::new(UnrechargeableContainer::new(
+        let milk_container = Arc::new(ProviderContainer::new(
             self.max_milk_capacity,
             String::from("milk"),
         ));
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
             self.max_grounded_coffe_capacity,
             String::from("cafe"),
-            ContainerRechargerController::new(grain_container.clone()),
+            ContainerRechargerController::new(grain_container.clone(), String::from("Coffee rechager")),
         ));
         let milk_foam_container = Arc::new(RechargeableContainer::new(
             self.max_milk_foam_capacity,
             String::from("espuma"),
-            ContainerRechargerController::new(milk_container.clone()),
+            ContainerRechargerController::new(milk_container.clone(), String::from("Foam rechager")),
         ));
         let cocoa_container = Arc::new(UnrechargeableContainer::new(
             self.max_cocoa_capacity,

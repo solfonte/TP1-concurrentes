@@ -42,8 +42,6 @@ impl Dispenser {
         foam_container: &RechargeableContainer,
         water_container: &NetworkRechargeableContainer,
         cocoa_container: &UnrechargeableContainer,
-        grain_controller: &ContainerRechargerController,
-        milk_controller: &ContainerRechargerController,
     ) -> Result<u32, String> {
         //TODO: aca deberia validar lo que devuelve
         //  -> devuelve que un contenedor se apago -> no se puede seguir esa orden AHI VIENE LA PARTE DEL CRITERIO

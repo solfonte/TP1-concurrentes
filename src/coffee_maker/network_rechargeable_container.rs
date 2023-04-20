@@ -1,8 +1,6 @@
 use std::sync::{Arc, Condvar, Mutex};
 
-use super::{
-    container::Container, container_rechargeable_controller::ContainerRechargerController,
-};
+use super::container::Container;
 
 #[derive(Debug)]
 pub struct System {

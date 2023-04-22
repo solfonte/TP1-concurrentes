@@ -164,5 +164,19 @@ mod rechargeable_container_test {
         let amount_left = container.amount_left();
         assert_eq!(amount_left, 2);
     }  
+
+    #[test]
+    fn test12_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two() {
+        use std::sync::Arc;
+        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+    
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))), String::from("Recharger"));
+        let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
+        let amount_left = container.amount_left();
+        assert_eq!(amount_left, 2);
+    }
     //TODO: tests de los casos de recarga
 }

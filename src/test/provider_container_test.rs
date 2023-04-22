@@ -44,4 +44,64 @@ mod provider_container_test {
         
         assert_eq!(extraction, Ok(2))
     }
+
+    #[test]
+    fn test05_when_there_are_two_units_available_then_extracting_cero_leaves_two_units_left_available() {
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+        
+        let container = ProviderContainer::new(2, String::from("Container"));
+        let _ = container.extract(0);
+        let amount_left = container.amount_left();
+        
+        assert_eq!(amount_left, 2)
+    }
+
+    #[test]
+    fn test06_when_there_are_two_units_available_then_extracting_one_leaves_one_unit_left_available() {
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+        
+        let container = ProviderContainer::new(2, String::from("Container"));
+        let _ = container.extract(1);
+        let amount_left = container.amount_left();
+        
+        assert_eq!(amount_left, 1)
+    }
+
+    #[test]
+    fn test07_when_there_are_two_units_available_then_extracting_two_leaves_cero_unit_left_available() {
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+        
+        let container = ProviderContainer::new(2, String::from("Container"));
+        let _ = container.extract(2);
+        let amount_left = container.amount_left();
+        
+        assert_eq!(amount_left, 0)
+    }
+
+    #[test]
+    fn test08_when_there_are_two_units_available_then_extracting_three_leaves_cero_unit_left_available() {
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+        
+        let container = ProviderContainer::new(2, String::from("Container"));
+        let _ = container.extract(3);
+        let amount_left = container.amount_left();
+        
+        assert_eq!(amount_left, 0)
+        
+    }
+
+    #[test]
+    fn test09_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two() {
+        use crate::coffee_maker::provider_container::ProviderContainer;
+        use crate::coffee_maker::container::Container;
+        
+        let container = ProviderContainer::new(2, String::from("Container"));
+        let amount_left = container.amount_left();
+        
+        assert_eq!(amount_left, 2)
+    }
 }

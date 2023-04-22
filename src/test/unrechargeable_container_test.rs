@@ -93,4 +93,15 @@ mod unrechargeable_container_test {
         assert_eq!(amount_left, 2)
     }
 
+    #[test]
+    fn test09_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two() {
+        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker::container::Container;
+    
+        let container = UnrechargeableContainer::new(2, String::from("unit container"));
+        let amount_left = container.amount_left();
+    
+        assert_eq!(amount_left, 2)
+    }
+
 }

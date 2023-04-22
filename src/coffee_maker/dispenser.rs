@@ -1,7 +1,5 @@
-use std_semaphore::Semaphore;
-
-use crate::{coffee_maker::container::Container, order::{order::Order, order_system::OrderSystem, self}};
-use std::{sync::{Arc, Condvar, Mutex}, collections::VecDeque};
+use crate::{coffee_maker::container::Container, order::{order::Order, order_system::OrderSystem}};
+use std::{sync::{Arc, Condvar, Mutex}};
 
 use super::{
     network_rechargeable_container::NetworkRechargeableContainer,

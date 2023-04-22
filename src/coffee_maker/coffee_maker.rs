@@ -113,13 +113,13 @@ impl CoffeeMaker {
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
             self.max_grounded_coffe_capacity,
             String::from("cafe"),
-            ContainerRechargerController::new(grain_container.clone(), String::from("Coffee rechager")),
+            ContainerRechargerController::new(grain_container.clone()),
             COFFEE_RECHARGING_RATE
         ));
         let milk_foam_container = Arc::new(RechargeableContainer::new(
             self.max_milk_foam_capacity,
             String::from("espuma"),
-            ContainerRechargerController::new(milk_container.clone(), String::from("Foam rechager")),
+            ContainerRechargerController::new(milk_container.clone()),
             FOAM_RECHARGING_RATE
         ));
         let cocoa_container = Arc::new(UnrechargeableContainer::new(
@@ -140,7 +140,7 @@ impl CoffeeMaker {
         );
 
         for d_handle in dispenser_handles {
-            if let Ok(dispenser_number) = d_handle.join() {
+            if let Ok(_/*dispenser_number*/) = d_handle.join() {
                 //println!("[dispenser {}] turned off", dispenser_number);
             }
         }

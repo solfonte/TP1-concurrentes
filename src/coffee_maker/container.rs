@@ -1,5 +1,3 @@
-use std::sync::{Arc, Condvar, Mutex};
-
 pub trait Container {
     fn extract(&self, extraction: u32) -> Result<u32, &str>;
     fn amount_left(&self) -> u32;

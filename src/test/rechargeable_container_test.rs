@@ -9,7 +9,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let extraction = container.extract(0);
         assert_eq!(extraction, Ok(0))
@@ -24,7 +24,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let extraction = container.extract(1);
         assert_eq!(extraction, Ok(1))
@@ -39,7 +39,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let extraction = container.extract(2);
         assert_eq!(extraction, Ok(2))
@@ -54,7 +54,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))),);
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let extraction = container.extract(3);
         assert_eq!(extraction, Ok(0))
@@ -68,7 +68,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let extraction = container.extract(5);
         assert_eq!(extraction, Ok(0))
@@ -82,7 +82,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))));
         let container = RechargeableContainer::new(5, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(3);
         let extraction = container.extract(5);
@@ -97,7 +97,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(0);
         let amount_left = container.amount_left();
@@ -113,7 +113,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(1);
         let amount_left = container.amount_left();
@@ -128,7 +128,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(2);
         let amount_left = container.amount_left();
@@ -143,7 +143,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(0, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(3);
         let amount_left = container.amount_left();
@@ -158,7 +158,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let _ = container.extract(5);
         let amount_left = container.amount_left();
@@ -173,7 +173,7 @@ mod rechargeable_container_test {
         use crate::coffee_maker::provider_container::ProviderContainer;
         use crate::coffee_maker::container::Container;
     
-        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))), String::from("Recharger"));
+        let container_recharger_controller = ContainerRechargerController::new(Arc::new(ProviderContainer::new(3, String::from("Provider"))));
         let container = RechargeableContainer::new(2, String::from("Rechargeable container"), container_recharger_controller, 1);
         let amount_left = container.amount_left();
         assert_eq!(amount_left, 2);

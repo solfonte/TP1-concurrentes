@@ -1,13 +1,13 @@
-use std::sync::{Arc, Condvar, Mutex};
+use std::{sync::{Arc, Condvar, Mutex}, time::Duration, thread};
 
 use super::container::Container;
+const NETWORK_LOADING_RATE: u64 = 2; // 2 units per second
 
 #[derive(Debug)]
 pub struct System {
     max_capacity: u32,
     amount: u32,
     busy: bool,
-    is_on: bool,
 }
 
 pub struct NetworkRechargeableContainer {
@@ -21,20 +21,19 @@ impl Container for NetworkRechargeableContainer {
         let mut result = Ok(extraction);
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                (state.busy && state.is_on)
-                    || (!state.busy && state.is_on && state.amount < extraction)
+                state.busy
             }) {
                 
                 (*system).busy = true;
-                
-                if !(*system).is_on {
-                    result = Ok(0);
-                } else {
-                    (*system).amount -= extraction;
+                if (*system).max_capacity >= extraction && (*system).amount < extraction {
+                    (*system).amount = self.recharge_from_network((*system).max_capacity, (*system).max_capacity - (*system).amount);
                 }
                 
-                if (*system).amount == 0 {
-                    (*system).is_on = false;
+                if (*system).amount >= extraction {
+                    (*system).amount -= extraction;
+                    result = Ok(extraction);
+                } else {
+                    result = Ok(0);
                 }
                 
                 println!("[container {}] {:?}", self.name, *system);
@@ -68,11 +67,15 @@ impl NetworkRechargeableContainer {
                     max_capacity,
                     amount: max_capacity,
                     busy: false,
-                    is_on: true,
                 }),
                 Condvar::new(),
             )),
             name,
         }
+    }
+
+    fn recharge_from_network(&self, max_capacity: u32, amount_to_recharge: u32) -> u32{
+        thread::sleep(Duration::from_secs(( amount_to_recharge as u64) / NETWORK_LOADING_RATE));
+        max_capacity
     }
 }

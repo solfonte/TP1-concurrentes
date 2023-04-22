@@ -1,21 +1,23 @@
 use crate::{
     coffee_maker::{
-        dispenser::Dispenser,
-        network_rechargeable_container::NetworkRechargeableContainer,
+        dispenser::Dispenser, network_rechargeable_container::NetworkRechargeableContainer,
         rechargeable_container::RechargeableContainer,
         unrechargeable_container::UnrechargeableContainer,
     },
     order::order_system::OrderSystem,
 };
 use std::{
-    sync::{Arc, Mutex, Condvar},
+    sync::{Arc, Condvar, Mutex},
     thread::{self, JoinHandle},
 };
 
 const COFFEE_RECHARGING_RATE: u32 = 10;
 const FOAM_RECHARGING_RATE: u32 = 5;
 
-use super::{provider_container::ProviderContainer, container_rechargeable_controller::ContainerRechargerController};
+use super::{
+    container_rechargeable_controller::ContainerRechargerController,
+    provider_container::ProviderContainer,
+};
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 
 fn start_dispenser(
@@ -36,16 +38,18 @@ fn start_dispenser(
 
         let mut finish_processing_orders: bool = false;
         while !finish_processing_orders {
-            if let Ok(finished_processing) = dispenser.process_order(&ground_coffee_container_clone,
+            if let Ok(finished_processing) = dispenser.process_order(
+                &ground_coffee_container_clone,
                 &milk_foam_container_clone,
                 &water_container_clone,
                 &cocoa_container,
-                &order_queue_monitor){
-                    finish_processing_orders = finished_processing;
-            }else {
-                    /*condicion de error */
+                &order_queue_monitor,
+            ) {
+                finish_processing_orders = finished_processing;
+            } else {
+                /*condicion de error */
                 finish_processing_orders = true
-            }            
+            }
         }
 
         dispenser_number
@@ -98,10 +102,7 @@ impl CoffeeMaker {
         dispenser_handles
     }
 
-    pub fn turn_on(
-        &mut self,
-        order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>,
-    ) {
+    pub fn turn_on(&mut self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
         let grain_container = Arc::new(ProviderContainer::new(
             self.max_grain_capacity,
             String::from("granos"),
@@ -114,13 +115,13 @@ impl CoffeeMaker {
             self.max_grounded_coffe_capacity,
             String::from("cafe"),
             ContainerRechargerController::new(grain_container.clone()),
-            COFFEE_RECHARGING_RATE
+            COFFEE_RECHARGING_RATE,
         ));
         let milk_foam_container = Arc::new(RechargeableContainer::new(
             self.max_milk_foam_capacity,
             String::from("espuma"),
             ContainerRechargerController::new(milk_container.clone()),
-            FOAM_RECHARGING_RATE
+            FOAM_RECHARGING_RATE,
         ));
         let cocoa_container = Arc::new(UnrechargeableContainer::new(
             self.max_cocoa_capacity,
@@ -136,11 +137,11 @@ impl CoffeeMaker {
             milk_foam_container,
             cocoa_container,
             water_container,
-            &order_queue_monitor
+            &order_queue_monitor,
         );
 
         for d_handle in dispenser_handles {
-            if let Ok(_/*dispenser_number*/) = d_handle.join() {
+            if let Ok(_ /*dispenser_number*/) = d_handle.join() {
                 //println!("[dispenser {}] turned off", dispenser_number);
             }
         }

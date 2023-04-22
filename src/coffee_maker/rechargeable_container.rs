@@ -22,30 +22,32 @@ pub struct RechargeableContainer {
 
 impl Container for RechargeableContainer {
     fn extract(&self, extraction: u32) -> Result<u32, &str> {
-        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor"); 
+        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy && state.is_on
-            }) {
-                
+            if let Ok(mut system) = self
+                .pair
+                .1
+                .wait_while(guard, |state| state.busy && state.is_on)
+            {
                 (*system).busy = true;
-                
+
                 if (*system).amount < extraction {
-                    let amount_to_recharge = ((*system).max_capacity  - (*system).amount) / self.recharging_rate;
+                    let amount_to_recharge =
+                        ((*system).max_capacity - (*system).amount) / self.recharging_rate;
                     let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
                     if let Ok(amount_returned) = recharging_result {
                         println!("[CONTAINER COULD RECHARGE!]");
                         (*system).amount += amount_returned * self.recharging_rate;
-                    }    
+                    }
                 }
-                
+
                 if (*system).amount >= extraction {
                     (*system).amount -= extraction;
                     result = Ok(extraction);
                 } else {
                     result = Ok(0);
                 }
-                
+
                 println!("[container {}] {:?}", self.name, *system);
                 (*system).busy = false;
             }
@@ -57,9 +59,7 @@ impl Container for RechargeableContainer {
     fn amount_left(&self) -> u32 {
         let mut amount_left = 0;
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy
-            }) {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
                 (*system).busy = true;
                 amount_left = (*system).amount;
                 (*system).busy = false;
@@ -75,7 +75,6 @@ impl RechargeableContainer {
         name: String,
         recharger_controller: ContainerRechargerController,
         recharging_rate: u32,
-
     ) -> Self {
         Self {
             pair: Arc::new((
@@ -90,12 +89,9 @@ impl RechargeableContainer {
             name,
             recharger_controller,
             recharging_rate,
-
         }
     }
 }
-
-
 
 /*
 Condiciones:
@@ -109,5 +105,3 @@ Condiciones:
 
 1 gr de grain - 10 gr de cafe molido
 */
-
-

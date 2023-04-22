@@ -2,7 +2,6 @@ use std::sync::{Arc, Condvar, Mutex};
 
 use super::container::Container;
 
-
 #[derive(Debug)]
 pub struct System {
     amount: u32,
@@ -18,11 +17,13 @@ pub struct ProviderContainer {
 
 impl Container for ProviderContainer {
     fn extract(&self, extraction: u32) -> Result<u32, &str> {
-        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor"); 
+        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy && state.is_on
-            }) {
+            if let Ok(mut system) = self
+                .pair
+                .1
+                .wait_while(guard, |state| state.busy && state.is_on)
+            {
                 println!("[Provider {}] {:?}", self.name, *system);
 
                 (*system).busy = true;
@@ -32,7 +33,7 @@ impl Container for ProviderContainer {
                     result = Ok(extraction);
                 } else {
                     result = Ok((*system).amount);
-                    (*system).amount = 0;      
+                    (*system).amount = 0;
                 }
 
                 (*system).busy = false;
@@ -45,9 +46,7 @@ impl Container for ProviderContainer {
     fn amount_left(&self) -> u32 {
         let mut amount_left = 0;
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy
-            }) {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
                 (*system).busy = true;
                 amount_left = (*system).amount;
                 (*system).busy = false;
@@ -58,10 +57,7 @@ impl Container for ProviderContainer {
 }
 
 impl ProviderContainer {
-    pub fn new(
-        max_capacity: u32,
-        name: String,
-    ) -> Self {
+    pub fn new(max_capacity: u32, name: String) -> Self {
         Self {
             pair: Arc::new((
                 Mutex::new(System {
@@ -76,8 +72,6 @@ impl ProviderContainer {
     }
 }
 
-
-
 /*
 Condiciones:
     - si me alcanza -> saco
@@ -90,5 +84,3 @@ Condiciones:
 
 1 gr de grain - 10 gr de cafe molido
 */
-
-

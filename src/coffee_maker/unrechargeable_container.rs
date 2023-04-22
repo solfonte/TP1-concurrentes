@@ -18,19 +18,20 @@ impl Container for UnrechargeableContainer {
     fn extract(&self, extraction: u32) -> Result<u32, &str> {
         let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy && state.is_on
-            }) {
-                
+            if let Ok(mut system) = self
+                .pair
+                .1
+                .wait_while(guard, |state| state.busy && state.is_on)
+            {
                 (*system).busy = true;
-                
+
                 if (*system).amount < extraction {
                     result = Ok(0);
                 } else {
                     (*system).amount -= extraction;
                     result = Ok(extraction);
                 }
-                
+
                 (*system).busy = false;
                 println!("[container {}] {:?}", self.name, *system);
             }
@@ -42,9 +43,7 @@ impl Container for UnrechargeableContainer {
     fn amount_left(&self) -> u32 {
         let mut amount_left = 0;
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                state.busy
-            }) {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
                 (*system).busy = true;
                 amount_left = (*system).amount;
                 (*system).busy = false;

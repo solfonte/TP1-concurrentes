@@ -1,4 +1,4 @@
-use std::sync::{Mutex, Condvar};
+use std::sync::{Condvar, Mutex};
 use std::{sync::Arc, thread};
 use tp1::coffee_maker::coffee_maker::CoffeeMaker;
 use tp1::order::order_system::OrderSystem;
@@ -18,12 +18,10 @@ fn main() {
     let monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
     let mut robot = Robot::new();
 
-
     let monitor_pair_clone = monitor_pair.clone();
     let coffe_make_handle = thread::spawn(move || {
         coffee_maker.turn_on(monitor_pair_clone);
     });
-
 
     let order_preparation_handle = thread::spawn(move || {
         let mut there_are_orders_left = true;
@@ -31,7 +29,7 @@ fn main() {
         let monitor_pair_clone_robot = monitor_pair.clone();
 
         while there_are_orders_left {
-            let result  = robot.take_order();
+            let result = robot.take_order();
 
             if let Some(order) = result {
                 robot.queue_order(Some(order), &monitor_pair_clone_robot);
@@ -56,8 +54,6 @@ fn main() {
         }
 
     });*/
-
-
 
     coffe_make_handle.join().unwrap();
     order_preparation_handle.join().unwrap();

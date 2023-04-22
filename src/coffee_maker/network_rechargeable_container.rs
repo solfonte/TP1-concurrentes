@@ -24,25 +24,39 @@ impl Container for NetworkRechargeableContainer {
                 (state.busy && state.is_on)
                     || (!state.busy && state.is_on && state.amount < extraction)
             }) {
-                println!("[container {}] {:?}", self.name, *system);
-
+                
                 (*system).busy = true;
-
+                
                 if !(*system).is_on {
                     result = Ok(0);
                 } else {
                     (*system).amount -= extraction;
                 }
-
+                
                 if (*system).amount == 0 {
                     (*system).is_on = false;
                 }
-
+                
+                println!("[container {}] {:?}", self.name, *system);
                 (*system).busy = false;
             }
         }
         self.pair.1.notify_all();
         result
+    }
+
+    fn amount_left(&self) -> u32 {
+        let mut amount_left = 0;
+        if let Ok(guard) = self.pair.0.lock() {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
+                state.busy
+            }) {
+                (*system).busy = true;
+                amount_left = (*system).amount;
+                (*system).busy = false;
+            }
+        }
+        amount_left
     }
 }
 

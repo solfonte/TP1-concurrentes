@@ -1,7 +1,6 @@
 use std::sync::{Arc, Condvar, Mutex};
 
 use super::container::Container;
-
 #[derive(Debug)]
 pub struct System {
     amount: u32,
@@ -38,6 +37,20 @@ impl Container for UnrechargeableContainer {
         }
         self.pair.1.notify_all();
         result
+    }
+
+    fn amount_left(&self) -> u32 {
+        let mut amount_left = 0;
+        if let Ok(guard) = self.pair.0.lock() {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
+                state.busy
+            }) {
+                (*system).busy = true;
+                amount_left = (*system).amount;
+                (*system).busy = false;
+            }
+        }
+        amount_left
     }
 }
 

@@ -4,7 +4,6 @@ use super::container::Container;
 
 #[derive(Debug)]
 pub struct System {
-    max_capacity: u32,
     amount: u32,
     busy: bool,
     is_on: bool,
@@ -21,20 +20,20 @@ impl Container for UnrechargeableContainer {
         let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
-                (state.busy && state.is_on)
+                state.busy && state.is_on
             }) {
-                println!("[container {}] {:?}", self.name, *system);
-
+                
                 (*system).busy = true;
-
+                
                 if (*system).amount < extraction {
                     result = Ok(0);
                 } else {
                     (*system).amount -= extraction;
                     result = Ok(extraction);
                 }
-
+                
                 (*system).busy = false;
+                println!("[container {}] {:?}", self.name, *system);
             }
         }
         self.pair.1.notify_all();
@@ -47,7 +46,6 @@ impl UnrechargeableContainer {
         Self {
             pair: Arc::new((
                 Mutex::new(System {
-                    max_capacity,
                     amount: max_capacity,
                     busy: false,
                     is_on: true,

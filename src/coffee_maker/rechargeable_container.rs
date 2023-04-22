@@ -17,6 +17,7 @@ pub struct RechargeableContainer {
     pair: Arc<(Mutex<System>, Condvar)>,
     name: String,
     recharger_controller: ContainerRechargerController,
+    recharging_rate: u32,
 }
 
 impl Container for RechargeableContainer {
@@ -26,31 +27,30 @@ impl Container for RechargeableContainer {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| {
                 state.busy && state.is_on
             }) {
-                println!("[container {}] {:?}", self.name, *system);
-
+                
                 (*system).busy = true;
-
+                
                 if (*system).amount < extraction {
-                    let amount_to_recharge = ((*system).max_capacity  - (*system).amount) / 10;
+                    let amount_to_recharge = ((*system).max_capacity  - (*system).amount) / self.recharging_rate;
                     let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
                     if let Ok(amount_returned) = recharging_result {
                         println!("[CONTAINER COULD RECHARGE!]");
-                        (*system).amount += amount_returned * 10;
+                        (*system).amount += amount_returned * self.recharging_rate;
                     }    
                 }
-
+                
                 if (*system).amount >= extraction {
                     (*system).amount -= extraction;
                     result = Ok(extraction);
                 } else {
                     result = Ok(0);
                 }
-
+                
+                println!("[container {}] {:?}", self.name, *system);
                 (*system).busy = false;
             }
         }
         self.pair.1.notify_all();
-        println!("CONTAINER NOTIFIED");
         result
     }
 }
@@ -60,6 +60,8 @@ impl RechargeableContainer {
         max_capacity: u32,
         name: String,
         recharger_controller: ContainerRechargerController,
+        recharging_rate: u32,
+
     ) -> Self {
         Self {
             pair: Arc::new((
@@ -73,6 +75,8 @@ impl RechargeableContainer {
             )),
             name,
             recharger_controller,
+            recharging_rate,
+
         }
     }
 }

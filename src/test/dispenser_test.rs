@@ -121,4 +121,35 @@ mod dispenser_test {
 
         assert_eq!(dispenser_result, Ok(units));
     }
+
+    #[test]
+    fn test07_when_dispensing_three_units_from_rechargeable_container_which_are_available_and_can_be_recharged_the_dispenser_returns_three_units(
+    ) {
+        use crate::coffee_maker::dispenser::Dispenser;
+        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker::{
+            container_rechargeable_controller::ContainerRechargerController,
+            provider_container::ProviderContainer,
+        };
+        use std::sync::Arc;
+
+        let units = 3;
+
+        let container = RechargeableContainer::new(
+            5,
+            String::from("container"),
+            ContainerRechargerController::new(Arc::new(ProviderContainer::new(
+                5,
+                String::from("provider"),
+            ))),
+            1,
+        );
+        let _ = container.extract(4);
+        let dispenser = Dispenser::new(0);
+        let dispenser_result = dispenser.dispense_resource(units, &container);
+        assert_eq!(dispenser_result, Ok(3));
+    }
+
+
+    
 }

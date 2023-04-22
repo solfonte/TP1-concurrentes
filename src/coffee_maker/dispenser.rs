@@ -45,40 +45,74 @@ impl Dispenser {
         water_container: &NetworkRechargeableContainer,
         cocoa_container: &UnrechargeableContainer,
     ) -> Result<u32, String> {
-        //TODO: aca deberia validar lo que devuelve
-        //  -> devuelve que un contenedor se apago -> no se puede seguir esa orden AHI VIENE LA PARTE DEL CRITERIO
-        //  -> devuelve que me dio bien el ingrediente
+        let mut ingredient_not_available = false;
+
         let coffee_amount_required = order.get_coffee_amount();
         if coffee_amount_required > 0 {
-            if let Err(msg) = self.dispense_resource(coffee_amount_required, coffee_container) {
-                return Err(String::from(msg));
+            let coffee_result = self.dispense_resource(coffee_amount_required, coffee_container);
+            match coffee_result {
+                Ok(amount) => {
+                    if amount == 0 {
+                        ingredient_not_available = true;
+                    }
+                }
+                Err(msg) => {
+                    return Err(String::from(msg));
+                }
             }
         }
 
         let cocoa_amount_required = order.get_cocoa_amount();
         if cocoa_amount_required > 0 {
-            if let Err(msg) = self.dispense_resource(cocoa_amount_required, cocoa_container) {
-                return Err(String::from(msg));
+            let cocoa_result = self.dispense_resource(cocoa_amount_required, cocoa_container);
+            match cocoa_result {
+                Ok(amount) => {
+                    if amount == 0 {
+                        ingredient_not_available = true;
+                    }
+                }
+                Err(msg) => {
+                    return Err(String::from(msg));
+                }
             }
         }
 
         let milk_foam_amount_required = order.get_milk_foam_amount();
         if milk_foam_amount_required > 0 {
-            if let Err(msg) = self.dispense_resource(milk_foam_amount_required, foam_container) {
-                return Err(String::from(msg));
+            let foam_result = self.dispense_resource(milk_foam_amount_required, foam_container);
+            match foam_result {
+                Ok(amount) => {
+                    if amount == 0 {
+                        ingredient_not_available = true;
+                    }
+                }
+                Err(msg) => {
+                    return Err(String::from(msg));
+                }
             }
         }
 
         let water_amount_required = order.get_water_amount();
         if water_amount_required > 0 {
-            if let Err(msg) = self.dispense_resource(water_amount_required, water_container) {
-                return Err(String::from(msg));
+            let water_result = self.dispense_resource(water_amount_required, water_container);
+            match water_result {
+                Ok(amount) => {
+                    if amount == 0 {
+                        ingredient_not_available = true;
+                    }
+                }
+                Err(msg) => {
+                    return Err(String::from(msg));
+                }
             }
         }
 
-        //TODO:check por Ok(0)
-        println!("[FINISHED] ORDER {}", order.get_order_number());
-        Ok(1)
+        let mut amount_orders_prepared = 0;
+        if !ingredient_not_available {
+            println!("[FINISHED] ORDER {}", order.get_order_number());
+            amount_orders_prepared = 1;
+        }
+        Ok(amount_orders_prepared)
     }
 
     pub fn take_order_from_queue(

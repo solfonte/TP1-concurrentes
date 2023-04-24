@@ -153,7 +153,7 @@ impl Dispenser {
         water_container: &NetworkRechargeableContainer,
         cocoa_container: &UnrechargeableContainer,
         order_queue_monitor: &Arc<(Mutex<OrderSystem>, Condvar)>,
-    ) -> Result<bool, String> {
+    ) -> Result<(u32,bool), String> {
         // println!("[dispenser {}] enter to process", self.dispenser_number);
 
         if let Some(order) = self.take_order_from_queue(order_queue_monitor) {
@@ -166,12 +166,12 @@ impl Dispenser {
             );
 
             match result {
-                Ok(_) => {
-                    return Ok(false);
+                Ok(order_prepared) => {
+                    return Ok((order_prepared,false));
                 }
                 Err(msg) => return Err(String::from(msg)),
             }
         }
-        Ok(true)
+        Ok((0,true))
     }
 }

@@ -16,7 +16,7 @@ const FOAM_RECHARGING_RATE: u32 = 5;
 
 use super::{
     container_rechargeable_controller::ContainerRechargerController,
-    provider_container::ProviderContainer,
+    provider_container::ProviderContainer, container::Container,
 };
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 
@@ -45,9 +45,10 @@ fn start_dispenser(
                 &cocoa_container,
                 &order_queue_monitor,
             ) {
-                finish_processing_orders = finished_processing;
+                finish_processing_orders = finished_processing.1;
+                //TODO: guardar que la orden se preparo
             } else {
-                /*condicion de error */
+                /*TODO: condicion de error */
                 finish_processing_orders = true
             }
         }
@@ -57,24 +58,54 @@ fn start_dispenser(
 }
 
 pub struct CoffeeMaker {
-    max_grain_capacity: u32,
-    max_milk_capacity: u32,
-    max_grounded_coffe_capacity: u32,
-    max_milk_foam_capacity: u32,
-    max_cocoa_capacity: u32,
-    max_water_capacity: u32,
+    grain_container: Arc<ProviderContainer>,
+    milk_container: Arc<ProviderContainer>,
+    ground_coffee_container: Arc<RechargeableContainer>,
+    milk_foam_container: Arc<RechargeableContainer>,
+    cocoa_container: Arc<UnrechargeableContainer>,
+    water_container: Arc<NetworkRechargeableContainer>,
+    prepared_orders_amount: Arc<(Mutex<(bool, u32)>, Condvar)>, 
     dispenser_amount: u32,
 }
 
 impl CoffeeMaker {
     pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
+        let grain_container = Arc::new(ProviderContainer::new(
+            g,
+            String::from("granos"),
+        ));
+        let milk_container = Arc::new(ProviderContainer::new(
+            l,
+            String::from("milk"),
+        ));
+        let ground_coffee_container = Arc::new(RechargeableContainer::new(
+            m,
+            String::from("cafe"),
+            ContainerRechargerController::new(grain_container.clone()),
+            COFFEE_RECHARGING_RATE,
+        ));
+        let milk_foam_container = Arc::new(RechargeableContainer::new(
+            e,
+            String::from("espuma"),
+            ContainerRechargerController::new(milk_container.clone()),
+            FOAM_RECHARGING_RATE,
+        ));
+        let cocoa_container = Arc::new(UnrechargeableContainer::new(
+            c,
+            String::from("cacao"),
+        ));
+        let water_container = Arc::new(NetworkRechargeableContainer::new(
+            a,
+            String::from("agua"),
+        ));
         Self {
-            max_grain_capacity: g,
-            max_milk_capacity: l,
-            max_grounded_coffe_capacity: m,
-            max_milk_foam_capacity: e,
-            max_cocoa_capacity: c,
-            max_water_capacity: a,
+            grain_container,
+            milk_container,
+            ground_coffee_container,
+            milk_foam_container,
+            cocoa_container,
+            water_container,
+            prepared_orders_amount: Arc::new((Mutex::new((false, 0)), Condvar::new())),
             dispenser_amount: n,
         }
     }
@@ -102,48 +133,44 @@ impl CoffeeMaker {
         dispenser_handles
     }
 
-    pub fn turn_on(&mut self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
-        let grain_container = Arc::new(ProviderContainer::new(
-            self.max_grain_capacity,
-            String::from("granos"),
-        ));
-        let milk_container = Arc::new(ProviderContainer::new(
-            self.max_milk_capacity,
-            String::from("milk"),
-        ));
-        let ground_coffee_container = Arc::new(RechargeableContainer::new(
-            self.max_grounded_coffe_capacity,
-            String::from("cafe"),
-            ContainerRechargerController::new(grain_container.clone()),
-            COFFEE_RECHARGING_RATE,
-        ));
-        let milk_foam_container = Arc::new(RechargeableContainer::new(
-            self.max_milk_foam_capacity,
-            String::from("espuma"),
-            ContainerRechargerController::new(milk_container.clone()),
-            FOAM_RECHARGING_RATE,
-        ));
-        let cocoa_container = Arc::new(UnrechargeableContainer::new(
-            self.max_cocoa_capacity,
-            String::from("cacao"),
-        ));
-        let water_container = Arc::new(NetworkRechargeableContainer::new(
-            self.max_water_capacity,
-            String::from("agua"),
-        ));
+    pub fn turn_on(&self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
 
         let dispenser_handles = self.turn_dispensers_on(
-            ground_coffee_container,
-            milk_foam_container,
-            cocoa_container,
-            water_container,
+            self.ground_coffee_container.clone(),
+            self.milk_foam_container.clone(),
+            self.cocoa_container.clone(),
+            self.water_container.clone(),
             &order_queue_monitor,
         );
 
         for d_handle in dispenser_handles {
-            if let Ok(_ /*dispenser_number*/) = d_handle.join() {
-                //println!("[dispenser {}] turned off", dispenser_number);
+            if let Ok(dispenser_number) = d_handle.join() {
+                println!("[dispenser {}] turned off", dispenser_number);
             }
         }
+    }
+
+    pub fn get_cocoa_statistics(&self) -> u32 {
+        self.cocoa_container.amount_left()
+    }
+
+    pub fn get_coffee_grain_statistics(&self) -> u32 {
+        self.grain_container.amount_left()
+    }
+
+    pub fn get_ground_coffee_statistics(&self) -> u32 {
+        self.ground_coffee_container.amount_left()
+    }
+
+    pub fn get_milk_statistics(&self) -> u32 {
+        self.milk_container.amount_left()
+    }
+
+    pub fn get_water_statistics(&self) -> u32 {
+        0
+    }
+
+    pub fn get_milk_foam_statistics(&self) -> u32 {
+        self.milk_foam_container.amount_left()
     }
 }

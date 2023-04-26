@@ -1,4 +1,6 @@
-use std::sync::{Arc, Condvar, Mutex};
+use std::{sync::{Arc, Condvar, Mutex}};
+
+use crate::statistics_checker::statistic::Statatistic;
 
 use super::{
     container::Container, container_rechargeable_controller::ContainerRechargerController,
@@ -8,6 +10,7 @@ use super::{
 pub struct System {
     max_capacity: u32,
     amount: u32,
+    amount_consumed: u32,
     busy: bool,
     is_on: bool,
 }
@@ -29,43 +32,25 @@ impl Container for RechargeableContainer {
                 .1
                 .wait_while(guard, |state| state.busy && state.is_on)
             {
-                (*system).busy = true;
-
-                if (*system).amount < extraction {
-                    let amount_to_recharge =
-                        ((*system).max_capacity - (*system).amount) / self.recharging_rate;
-                    let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
-                    if let Ok(amount_returned) = recharging_result {
-                        println!("[CONTAINER COULD RECHARGE!]");
-                        (*system).amount += amount_returned * self.recharging_rate;
-                    }
-                }
-
-                if (*system).amount >= extraction {
-                    (*system).amount -= extraction;
-                    result = Ok(extraction);
-                } else {
-                    result = Ok(0);
-                }
-
-                println!("[container {}] {:?}", self.name, *system);
-                (*system).busy = false;
+                result = self.extract_amount(&mut system, extraction);
             }
         }
         self.pair.1.notify_all();
         result
     }
 
-    fn amount_left(&self) -> u32 {
+    fn get_statistics(&self) -> Statatistic {
         let mut amount_left = 0;
+        let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
-                (*system).busy = true;
-                amount_left = (*system).amount;
+                system.busy = true;
+                amount_left = system.amount;
+                amount_consumed = system.amount_consumed;
                 (*system).busy = false;
             }
         }
-        amount_left
+        Statatistic { amount_left, amount_consumed, container: String::from(&self.name) }
     }
 }
 
@@ -81,6 +66,7 @@ impl RechargeableContainer {
                 Mutex::new(System {
                     max_capacity,
                     amount: max_capacity,
+                    amount_consumed: 0,
                     busy: false,
                     is_on: true,
                 }),
@@ -91,6 +77,33 @@ impl RechargeableContainer {
             recharging_rate,
         }
     }
+
+    pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, &str> {
+        let result;
+        system.busy = true;
+
+        if system.amount < extraction {
+            let amount_to_recharge =
+                (system.max_capacity - system.amount) / self.recharging_rate;
+            let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
+            if let Ok(amount_returned) = recharging_result {
+                println!("[CONTAINER COULD RECHARGE!]");
+                system.amount += amount_returned * self.recharging_rate;
+            }
+        }
+
+        if system.amount >= extraction {
+            system.amount -= extraction;
+            system.amount_consumed += extraction;
+            result = Ok(extraction);
+        } else {
+            result = Ok(0);
+        }
+
+        system.busy = false;
+        result
+    }
+
 }
 
 /*

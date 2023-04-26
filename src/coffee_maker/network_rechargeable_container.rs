@@ -4,6 +4,8 @@ use std::{
     time::Duration,
 };
 
+use crate::statistics_checker::statistic::Statatistic;
+
 use super::container::Container;
 const NETWORK_LOADING_RATE: u64 = 2; // 2 units per second
 
@@ -11,6 +13,7 @@ const NETWORK_LOADING_RATE: u64 = 2; // 2 units per second
 pub struct System {
     max_capacity: u32,
     amount: u32,
+    amount_consumed: u32,
     busy: bool,
 }
 
@@ -25,22 +28,22 @@ impl Container for NetworkRechargeableContainer {
         let mut result = Ok(extraction);
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
-                (*system).busy = true;
-                if (*system).max_capacity >= extraction && (*system).amount < extraction {
-                    (*system).amount = self.recharge_from_network(
-                        (*system).max_capacity,
-                        (*system).max_capacity - (*system).amount,
+                system.busy = true;
+                if system.max_capacity >= extraction && system.amount < extraction {
+                    system.amount = self.recharge_from_network(
+                        system.max_capacity,
+                        system.max_capacity - system.amount,
                     );
                 }
 
-                if (*system).amount >= extraction {
-                    (*system).amount -= extraction;
+                if system.amount >= extraction {
+                    system.amount -= extraction;
+                    system.amount_consumed += extraction;
                     result = Ok(extraction);
                 } else {
                     result = Ok(0);
                 }
 
-                println!("[container {}] {:?}", self.name, *system);
                 (*system).busy = false;
             }
         }
@@ -48,16 +51,19 @@ impl Container for NetworkRechargeableContainer {
         result
     }
 
-    fn amount_left(&self) -> u32 {
+    fn get_statistics(&self) -> Statatistic {
         let mut amount_left = 0;
+        let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
-                (*system).busy = true;
-                amount_left = (*system).amount;
-                (*system).busy = false;
+                system.busy = true;
+                amount_left = system.amount;
+                amount_consumed = system.amount_consumed;
+                system.busy = false;
             }
         }
-        amount_left
+        //TODO: change name to enum
+        Statatistic {amount_left, amount_consumed, container: String::from(&self.name)}
     }
 }
 
@@ -68,6 +74,7 @@ impl NetworkRechargeableContainer {
                 Mutex::new(System {
                     max_capacity,
                     amount: max_capacity,
+                    amount_consumed: 0,
                     busy: false,
                 }),
                 Condvar::new(),

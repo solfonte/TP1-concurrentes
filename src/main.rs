@@ -36,8 +36,8 @@ fn main() {
         let mut continue_printing_statistics = true;
 
         while continue_printing_statistics {
-            thread::sleep(Duration::from_millis(10));
-            continue_printing_statistics = statistics_checker.print_container_statistics();
+            thread::sleep(Duration::from_millis(200));
+            continue_printing_statistics = statistics_checker.print_statistics();
             
 
             //niveles de todos los contenedores
@@ -71,4 +71,5 @@ fn main() {
     coffe_make_handle.join().unwrap();
     order_preparation_handle.join().unwrap();
     statistics_handle.join().unwrap();
+    //TODO: cambiar los unwrapps
 }

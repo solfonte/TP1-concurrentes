@@ -1,9 +1,12 @@
 use std::sync::{Arc, Condvar, Mutex};
 
+use crate::statistics_checker::statistic::Statatistic;
+
 use super::container::Container;
 #[derive(Debug)]
 pub struct System {
     amount: u32,
+    amount_consumed: u32,
     busy: bool,
     is_on: bool,
 }
@@ -23,33 +26,35 @@ impl Container for UnrechargeableContainer {
                 .1
                 .wait_while(guard, |state| state.busy && state.is_on)
             {
-                (*system).busy = true;
+                system.busy = true;
 
-                if (*system).amount < extraction {
+                if system.amount < extraction {
                     result = Ok(0);
                 } else {
-                    (*system).amount -= extraction;
+                    system.amount -= extraction;
+                    system.amount_consumed += extraction;
                     result = Ok(extraction);
                 }
 
-                (*system).busy = false;
-                println!("[container {}] {:?}", self.name, *system);
+                system.busy = false;
             }
         }
         self.pair.1.notify_all();
         result
     }
 
-    fn amount_left(&self) -> u32 {
+    fn get_statistics(&self) -> Statatistic {
         let mut amount_left = 0;
+        let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
-                (*system).busy = true;
-                amount_left = (*system).amount;
-                (*system).busy = false;
+                system.busy = true;
+                amount_left = system.amount;
+                amount_consumed = system.amount_consumed;
+                system.busy = false;
             }
         }
-        amount_left
+        Statatistic { amount_left, amount_consumed, container: String::from(&self.name) }
     }
 }
 
@@ -59,6 +64,7 @@ impl UnrechargeableContainer {
             pair: Arc::new((
                 Mutex::new(System {
                     amount: max_capacity,
+                    amount_consumed: 0,
                     busy: false,
                     is_on: true,
                 }),

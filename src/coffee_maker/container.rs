@@ -1,6 +1,8 @@
+use crate::statistics_checker::statistic::Statatistic;
+
 pub trait Container {
     fn extract(&self, extraction: u32) -> Result<u32, &str>;
-    fn amount_left(&self) -> u32;
+    fn get_statistics(&self) -> Statatistic;
 
     /*fn get_resource_info(&self) -> (u32, u32) {
             let mut max_capacity = 0;

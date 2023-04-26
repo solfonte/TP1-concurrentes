@@ -4,7 +4,7 @@ use crate::{
         rechargeable_container::RechargeableContainer,
         unrechargeable_container::UnrechargeableContainer,
     },
-    order::order_system::OrderSystem,
+    order::order_system::OrderSystem, statistics_checker::statistic::Statatistic,
 };
 use std::{
     sync::{Arc, Condvar, Mutex},
@@ -23,6 +23,7 @@ use super::{
 fn start_dispenser(
     dispenser_number: u32,
     order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>,
+    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
     ground_coffee_container: Arc<RechargeableContainer>,
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
@@ -35,6 +36,7 @@ fn start_dispenser(
         let milk_foam_container_clone = milk_foam_container.clone();
         let water_container_clone = water_container.clone();
         let cocoa_container = cocoa_container.clone();
+        let prepared_orders_monitor_clone = prepared_orders_monitor.clone();
 
         let mut finish_processing_orders: bool = false;
         while !finish_processing_orders {
@@ -44,9 +46,9 @@ fn start_dispenser(
                 &water_container_clone,
                 &cocoa_container,
                 &order_queue_monitor,
+                &prepared_orders_monitor_clone
             ) {
-                finish_processing_orders = finished_processing.1;
-                //TODO: guardar que la orden se preparo
+                finish_processing_orders = finished_processing;
             } else {
                 /*TODO: condicion de error */
                 finish_processing_orders = true
@@ -64,7 +66,7 @@ pub struct CoffeeMaker {
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
     water_container: Arc<NetworkRechargeableContainer>,
-    prepared_orders_amount: Arc<(Mutex<(bool, u32)>, Condvar)>, 
+    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>, 
     dispenser_amount: u32,
 }
 
@@ -105,7 +107,7 @@ impl CoffeeMaker {
             milk_foam_container,
             cocoa_container,
             water_container,
-            prepared_orders_amount: Arc::new((Mutex::new((false, 0)), Condvar::new())),
+            prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
             dispenser_amount: n,
         }
     }
@@ -123,6 +125,7 @@ impl CoffeeMaker {
             let dispenser_handle = start_dispenser(
                 i,
                 order_queue_monitor.clone(),
+                self.prepared_orders_monitor.clone(),
                 ground_coffee_container.clone(),
                 milk_foam_container.clone(),
                 cocoa_container.clone(),
@@ -150,27 +153,45 @@ impl CoffeeMaker {
         }
     }
 
-    pub fn get_cocoa_statistics(&self) -> u32 {
-        self.cocoa_container.amount_left()
+    pub fn get_cocoa_statistics(&self) -> Statatistic {
+        self.cocoa_container.get_statistics()
     }
 
-    pub fn get_coffee_grain_statistics(&self) -> u32 {
-        self.grain_container.amount_left()
+    pub fn get_coffee_grain_statistics(&self) -> Statatistic {
+        self.grain_container.get_statistics()
     }
 
-    pub fn get_ground_coffee_statistics(&self) -> u32 {
-        self.ground_coffee_container.amount_left()
+    pub fn get_ground_coffee_statistics(&self) -> Statatistic {
+        self.ground_coffee_container.get_statistics()
     }
 
-    pub fn get_milk_statistics(&self) -> u32 {
-        self.milk_container.amount_left()
+    pub fn get_milk_statistics(&self) -> Statatistic {
+        self.milk_container.get_statistics()
     }
 
-    pub fn get_water_statistics(&self) -> u32 {
-        0
+    pub fn get_water_statistics(&self) -> Statatistic {
+        self.water_container.get_statistics()
     }
 
-    pub fn get_milk_foam_statistics(&self) -> u32 {
-        self.milk_foam_container.amount_left()
+    pub fn get_milk_foam_statistics(&self) -> Statatistic {
+        self.milk_foam_container.get_statistics()
+    }
+
+    pub fn get_amount_drinks_prepared(&self) -> u32 {
+
+        let mut amount = 0;
+
+        if let Ok(guard) = self.prepared_orders_monitor.0.lock() {
+            if let Ok(mut order_system) = self.prepared_orders_monitor
+                .1
+                .wait_while(guard, |state| state.0)
+            {
+                order_system.0 = true;
+                amount = order_system.1;
+                order_system.0 = false;
+            }
+        }
+        self.prepared_orders_monitor.1.notify_all();
+        amount
     }
 }

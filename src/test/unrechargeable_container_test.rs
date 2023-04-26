@@ -55,9 +55,8 @@ mod unrechargeable_container_test {
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(0);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 2)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2)
     }
 
     #[test]
@@ -68,9 +67,8 @@ mod unrechargeable_container_test {
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(1);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 1)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 1)
     }
 
     #[test]
@@ -81,9 +79,8 @@ mod unrechargeable_container_test {
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(2);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 0);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 0);
     }
 
     #[test]
@@ -94,9 +91,8 @@ mod unrechargeable_container_test {
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(3);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 2)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2)
     }
 
     #[test]
@@ -106,8 +102,7 @@ mod unrechargeable_container_test {
         use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 2)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2)
     }
 }

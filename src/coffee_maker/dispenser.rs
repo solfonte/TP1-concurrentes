@@ -37,6 +37,20 @@ impl Dispenser {
         }
     }
 
+    pub fn add_prepared_order(&self, prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>) {
+        if let Ok(guard) = prepared_orders_monitor.0.lock() {
+            if let Ok(mut order_system) = prepared_orders_monitor
+                .1
+                .wait_while(guard, |state| state.0)
+            {
+                order_system.0 = true;
+                order_system.1 += 1;
+                order_system.0 = false;
+            }
+        }
+        prepared_orders_monitor.1.notify_all();
+    }
+
     pub fn prepare_order(
         &self,
         order: Order,
@@ -153,8 +167,8 @@ impl Dispenser {
         water_container: &NetworkRechargeableContainer,
         cocoa_container: &UnrechargeableContainer,
         order_queue_monitor: &Arc<(Mutex<OrderSystem>, Condvar)>,
-    ) -> Result<(u32,bool), String> {
-        // println!("[dispenser {}] enter to process", self.dispenser_number);
+        prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>,
+    ) -> Result<bool, String> {
 
         if let Some(order) = self.take_order_from_queue(order_queue_monitor) {
             let result = self.prepare_order(
@@ -167,11 +181,14 @@ impl Dispenser {
 
             match result {
                 Ok(order_prepared) => {
-                    return Ok((order_prepared,false));
+                    if order_prepared == 1 {
+                        self.add_prepared_order(prepared_orders_monitor);
+                    }
+                    return Ok(false);
                 }
                 Err(msg) => return Err(String::from(msg)),
             }
         }
-        Ok((0,true))
+        Ok(true)
     }
 }

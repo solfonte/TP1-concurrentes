@@ -151,8 +151,8 @@ mod rechargeable_container_test {
             1,
         );
         let _ = container.extract(0);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
 
     #[test]
@@ -174,8 +174,8 @@ mod rechargeable_container_test {
             1,
         );
         let _ = container.extract(1);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 1);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 1);
     }
 
     #[test]
@@ -197,8 +197,8 @@ mod rechargeable_container_test {
             1,
         );
         let _ = container.extract(2);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 0);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 0);
     }
 
     #[test]
@@ -220,8 +220,8 @@ mod rechargeable_container_test {
             1,
         );
         let _ = container.extract(3);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
 
     #[test]
@@ -243,8 +243,8 @@ mod rechargeable_container_test {
             1,
         );
         let _ = container.extract(5);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
 
     #[test]
@@ -265,8 +265,8 @@ mod rechargeable_container_test {
             container_recharger_controller,
             1,
         );
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
     //TODO: tests de los casos de recarga
 }

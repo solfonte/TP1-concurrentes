@@ -13,7 +13,7 @@ impl Robot {
             vector: Vec::from([
                 String::from("10;9;3;5"),
                 String::from("10;9;3;5"),
-                String::from("10;9;3;5"),
+                String::from("10;0;3;5"),
                 String::from("10;9;3;5"),
             ]),
         }

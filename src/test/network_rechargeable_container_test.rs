@@ -1,4 +1,5 @@
 mod network_rechargeable_container_test {
+
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
@@ -55,9 +56,8 @@ mod network_rechargeable_container_test {
 
         let container = NetworkRechargeableContainer::new(2, String::from("Container"));
         let _ = container.extract(0);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 2)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2)
     }
 
     #[test]
@@ -68,9 +68,8 @@ mod network_rechargeable_container_test {
 
         let container = NetworkRechargeableContainer::new(2, String::from("Container"));
         let _ = container.extract(1);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 1)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 1)
     }
 
     #[test]
@@ -81,9 +80,8 @@ mod network_rechargeable_container_test {
 
         let container = NetworkRechargeableContainer::new(2, String::from("Container"));
         let _ = container.extract(2);
-        let amount_left = container.amount_left();
-
-        assert_eq!(amount_left, 0)
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 0)
     }
 
     #[test]
@@ -105,8 +103,8 @@ mod network_rechargeable_container_test {
 
         let container = NetworkRechargeableContainer::new(2, String::from("Container"));
         let _ = container.extract(3);
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
 
     #[test]
@@ -116,8 +114,8 @@ mod network_rechargeable_container_test {
         use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
 
         let container = NetworkRechargeableContainer::new(2, String::from("Provider"));
-        let amount_left = container.amount_left();
-        assert_eq!(amount_left, 2);
+        let statistic = container.get_statistics();
+        assert_eq!(statistic.amount_left, 2);
     }
     #[test]
     fn test11_when_there_are_two_units_available_and_max_capacity_is_five_then_extracting_three_is_possible_extraction_equals_three(
@@ -128,8 +126,9 @@ mod network_rechargeable_container_test {
         let container = NetworkRechargeableContainer::new(5, String::from("Container"));
         let _ = container.extract(3);
         let extraction = container.extract(3);
-        let amount_left = container.amount_left();
+        let statistic = container.get_statistics();
+
         assert_eq!(extraction, Ok(3));
-        assert_eq!(amount_left, 2);
+        assert_eq!(statistic.amount_left, 2);
     }
 }

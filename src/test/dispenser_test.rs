@@ -3,8 +3,8 @@ mod dispenser_test {
     #[test]
     fn test01_when_dispensing_three_units_from_unrechargeable_container_which_are_available_the_dispenser_returns_three_units(
     ) {
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let units = 3;
 
@@ -19,9 +19,9 @@ mod dispenser_test {
     #[test]
     fn test02_when_dispensing_three_units_from_rechargeable_container_which_are_available_the_dispenser_returns_three_units(
     ) {
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
@@ -48,8 +48,8 @@ mod dispenser_test {
     #[test]
     fn test03_when_dispensing_three_units_from_network_rechargeable_container_which_are_available_the_dispenser_returns_three_units(
     ) {
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
 
         let units = 3;
 
@@ -64,9 +64,9 @@ mod dispenser_test {
     #[test]
     fn test04_when_dispensing_three_units_from_unrechargeable_container_which_are_not_available_the_dispenser_returns_cero_units(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let units = 3;
 
@@ -81,10 +81,10 @@ mod dispenser_test {
     #[test]
     fn test05_when_dispensing_three_units_from_rechargeable_container_which_are_not_available_and_cannot_be_recharged_the_dispenser_returns_cero_units(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
@@ -110,9 +110,9 @@ mod dispenser_test {
     #[test]
     fn test06_when_dispensing_three_units_from_network_rechargeable_container_which_are_not_available_but_is_below_max_capacity_the_dispenser_returns_three_units(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
 
         let units = 3;
 
@@ -127,10 +127,10 @@ mod dispenser_test {
     #[test]
     fn test07_when_dispensing_three_units_from_rechargeable_container_which_are_available_and_can_be_recharged_the_dispenser_returns_three_units(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
@@ -156,15 +156,15 @@ mod dispenser_test {
     #[test]
     fn test08_when_preparing_an_order_and_all_ingredients_are_available_the_dispenser_result_is_one(
     ) {
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -205,16 +205,16 @@ mod dispenser_test {
     #[test]
     fn test09_when_preparing_an_order_and_all_ingredients_except_from_cocoa_are_available_the_dispenser_result_is_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -256,16 +256,16 @@ mod dispenser_test {
     #[test]
     fn test10_when_preparing_an_order_and_all_ingredients_except_from_coffee_which_cannot_be_recharged_are_available_the_dispenser_result_is_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -307,16 +307,16 @@ mod dispenser_test {
     #[test]
     fn test11_when_preparing_an_order_and_all_ingredients_except_from_coffee_are_available_the_dispenser_result_is_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -359,16 +359,16 @@ mod dispenser_test {
     #[test]
     fn test12_when_preparing_an_order_and_all_ingredients_except_from_water_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -411,16 +411,16 @@ mod dispenser_test {
     #[test]
     fn test13_when_preparing_an_order_and_all_ingredients_except_from_coffee_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -464,16 +464,16 @@ mod dispenser_test {
     #[test]
     fn test14_when_preparing_an_order_and_all_ingredients_except_from_foam_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -489,7 +489,7 @@ mod dispenser_test {
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
-        
+
         let milk_container = ProviderContainer::new(10, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
@@ -517,16 +517,16 @@ mod dispenser_test {
     #[test]
     fn test15_when_preparing_an_order_with_cero_coffee_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -541,7 +541,7 @@ mod dispenser_test {
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
-        
+
         let milk_container = ProviderContainer::new(10, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
@@ -569,16 +569,16 @@ mod dispenser_test {
     #[test]
     fn test16_when_preparing_an_order_with_cero_cocoa_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -593,7 +593,7 @@ mod dispenser_test {
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
-        
+
         let milk_container = ProviderContainer::new(10, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
@@ -621,16 +621,16 @@ mod dispenser_test {
     #[test]
     fn test17_when_preparing_an_order_with_cero_milk_foam_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -645,7 +645,7 @@ mod dispenser_test {
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
-        
+
         let milk_container = ProviderContainer::new(10, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
@@ -673,16 +673,16 @@ mod dispenser_test {
     #[test]
     fn test17_when_preparing_an_order_with_cero_water_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::dispenser::Dispenser;
-        use crate::coffee_maker::network_rechargeable_container::NetworkRechargeableContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
-        use crate::coffee_maker::{
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::dispenser::Dispenser;
+        use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::{
             container_rechargeable_controller::ContainerRechargerController,
             provider_container::ProviderContainer,
         };
         use crate::{
-            coffee_maker::unrechargeable_container::UnrechargeableContainer, order::order::Order,
+            coffee_maker_components::unrechargeable_container::UnrechargeableContainer, order::order::Order,
         };
         use std::sync::Arc;
 
@@ -697,7 +697,7 @@ mod dispenser_test {
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
-        
+
         let milk_container = ProviderContainer::new(10, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,

@@ -2,10 +2,10 @@ mod rechargeable_container_test {
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -24,10 +24,10 @@ mod rechargeable_container_test {
     #[test]
     fn test02_when_there_are_two_units_available_then_extracting_one_is_possible_the_extraction_equals_one(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -46,10 +46,10 @@ mod rechargeable_container_test {
     #[test]
     fn test03_when_there_are_two_units_available_then_extracting_two_is_possible_the_extraction_equals_two(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -68,10 +68,10 @@ mod rechargeable_container_test {
     #[test]
     fn test04_when_there_are_two_units_available_and_no_recharging_resource_available_then_extracting_three_is_not_possible_the_extraction_equals_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -90,10 +90,10 @@ mod rechargeable_container_test {
     #[test]
     fn test05_when_there_are_two_units_available_and_max_capacity_is_two_and_three_recharging_units_available_then_extracting_five_is_not_possible_the_extraction_equals_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -112,10 +112,10 @@ mod rechargeable_container_test {
     #[test]
     fn test06_when_there_are_two_units_available_and_max_capacity_is_five_and_three_recharging_units_available_then_extracting_five_is_possible_the_extraction_equals_five(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -135,10 +135,10 @@ mod rechargeable_container_test {
     #[test]
     fn test07_when_there_are_two_units_available_then_extracting_cero_leaves_an_amount_of_two_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -158,10 +158,10 @@ mod rechargeable_container_test {
     #[test]
     fn test08_when_there_are_two_units_available_then_extracting_one_leaves_an_amount_of_one_unit_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -181,10 +181,10 @@ mod rechargeable_container_test {
     #[test]
     fn test09_when_there_are_two_units_available_then_extracting_two_leaves_an_amount_of_cero_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -204,10 +204,10 @@ mod rechargeable_container_test {
     #[test]
     fn test10_when_there_are_two_units_available_and_no_recharging_resource_available_then_extracting_three_leaves_an_amount_of_two_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -227,10 +227,10 @@ mod rechargeable_container_test {
     #[test]
     fn test11_when_there_are_two_units_available_and_max_capacity_is_two_and_three_recharging_units_available_then_extracting_five_leaves_an_amount_of_two_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -250,10 +250,10 @@ mod rechargeable_container_test {
     #[test]
     fn test12_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two()
     {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::container_rechargeable_controller::ContainerRechargerController;
-        use crate::coffee_maker::provider_container::ProviderContainer;
-        use crate::coffee_maker::rechargeable_container::RechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::container_rechargeable_controller::ContainerRechargerController;
+        use crate::coffee_maker_components::provider_container::ProviderContainer;
+        use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
         use std::sync::Arc;
 
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
@@ -263,7 +263,7 @@ mod rechargeable_container_test {
             2,
             String::from("Rechargeable container"),
             container_recharger_controller,
-            1,
+        1,
         );
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2);

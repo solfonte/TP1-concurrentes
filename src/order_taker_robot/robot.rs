@@ -1,4 +1,4 @@
-use crate::{order::order::Order, order::order_system::OrderSystem};
+use crate::{order_management::order::Order, order_management::order_system::OrderSystem};
 use std::sync::{Arc, Condvar, Mutex};
 
 pub struct Robot {
@@ -22,7 +22,7 @@ impl Robot {
     pub fn take_order(&mut self) -> Option<Order> {
         if self.vector_pos < self.vector.len() {
             let mut order_vec = Vec::new();
-            for j in self.vector[self.vector_pos].split(";") {
+            for j in self.vector[self.vector_pos].split(';') {
                 order_vec.push(j.parse::<u32>().unwrap())
             }
             let order_number = self.vector_pos;

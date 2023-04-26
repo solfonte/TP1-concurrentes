@@ -1,10 +1,11 @@
+//TODO: arreglar el tema de los use crate:: .....
 mod unrechargeable_container_test {
 
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let extraction = container.extract(0);
@@ -15,8 +16,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test02_when_there_are_two_units_available_then_extracting_one_is_possible_the_extraction_equals_one(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let extraction = container.extract(1);
@@ -27,8 +28,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test03_when_there_are_two_units_available_then_extracting_two_is_possible_the_extraction_equals_two(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let extraction = container.extract(2);
@@ -39,8 +40,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test04_when_there_are_two_units_available_then_extracting_three_is_not_possible_the_extraction_equals_cero(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let extraction = container.extract(3);
@@ -50,8 +51,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test05_when_there_are_two_units_available_then_extracting_cero_leaves_an_amount_of_two_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(0);
@@ -62,8 +63,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test06_when_there_are_two_units_available_then_extracting_one_leaves_an_amount_of_one_unit_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(1);
@@ -74,8 +75,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test07_when_there_are_two_units_available_then_extracting_two_leaves_an_amount_of_cero_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(2);
@@ -86,8 +87,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test08_when_there_are_two_units_available_then_extracting_three_leaves_an_amount_of_two_units_left_available(
     ) {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let _ = container.extract(3);
@@ -98,8 +99,8 @@ mod unrechargeable_container_test {
     #[test]
     fn test09_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two()
     {
-        use crate::coffee_maker::container::Container;
-        use crate::coffee_maker::unrechargeable_container::UnrechargeableContainer;
+        use crate::coffee_maker_components::container::Container;
+        use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
 
         let container = UnrechargeableContainer::new(2, String::from("unit container"));
         let statistic = container.get_statistics();

@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Condvar, Mutex}};
+use std::sync::{Arc, Condvar, Mutex};
 
 use crate::statistics_checker::statistic::Statatistic;
 
@@ -47,10 +47,14 @@ impl Container for RechargeableContainer {
                 system.busy = true;
                 amount_left = system.amount;
                 amount_consumed = system.amount_consumed;
-                (*system).busy = false;
+                system.busy = false;
             }
         }
-        Statatistic { amount_left, amount_consumed, container: String::from(&self.name) }
+        Statatistic {
+            amount_left,
+            amount_consumed,
+            container: String::from(&self.name),
+        }
     }
 }
 
@@ -79,12 +83,11 @@ impl RechargeableContainer {
     }
 
     pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, &str> {
-        let result;
+       
         system.busy = true;
 
         if system.amount < extraction {
-            let amount_to_recharge =
-                (system.max_capacity - system.amount) / self.recharging_rate;
+            let amount_to_recharge = (system.max_capacity - system.amount) / self.recharging_rate;
             let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
             if let Ok(amount_returned) = recharging_result {
                 println!("[CONTAINER COULD RECHARGE!]");
@@ -92,29 +95,17 @@ impl RechargeableContainer {
             }
         }
 
-        if system.amount >= extraction {
+        let result = if system.amount >= extraction {
             system.amount -= extraction;
             system.amount_consumed += extraction;
-            result = Ok(extraction);
+            Ok(extraction)
         } else {
-            result = Ok(0);
-        }
+            Ok(0)
+        };
 
         system.busy = false;
         result
     }
-
 }
 
-/*
-Condiciones:
-    - si me alcanza -> saco
-    - No me alcanza -> pido
-                            -> puede recargar igual o menos de lo pedido -> recargo -> devuelvo Ok(extraccion)
-                            -> no puede recargar -> devuelvo Ok(0)
 
-
-
-
-1 gr de grain - 10 gr de cafe molido
-*/

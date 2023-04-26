@@ -44,7 +44,7 @@ impl Container for NetworkRechargeableContainer {
                     result = Ok(0);
                 }
 
-                (*system).busy = false;
+                system.busy = false;
             }
         }
         self.pair.1.notify_all();
@@ -63,7 +63,11 @@ impl Container for NetworkRechargeableContainer {
             }
         }
         //TODO: change name to enum
-        Statatistic {amount_left, amount_consumed, container: String::from(&self.name)}
+        Statatistic {
+            amount_left,
+            amount_consumed,
+            container: String::from(&self.name),
+        }
     }
 }
 

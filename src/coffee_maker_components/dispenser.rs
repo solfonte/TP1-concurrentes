@@ -1,6 +1,6 @@
 use crate::{
-    coffee_maker::container::Container,
-    order::{order::Order, order_system::OrderSystem},
+    coffee_maker_components::container::Container,
+    order_management::{order::Order, order_system::OrderSystem},
 };
 use std::sync::{Arc, Condvar, Mutex};
 
@@ -28,20 +28,19 @@ impl Dispenser {
         match extraction_result {
             Ok(ingredient_taken) => {
                 // sleep
-                return Ok(ingredient_taken);
+                Ok(ingredient_taken)
             }
             Err(msg) => {
                 println!("[Error extracting]{msg}");
-                return Err("");
+                Err("")
             }
         }
     }
 
     pub fn add_prepared_order(&self, prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>) {
         if let Ok(guard) = prepared_orders_monitor.0.lock() {
-            if let Ok(mut order_system) = prepared_orders_monitor
-                .1
-                .wait_while(guard, |state| state.0)
+            if let Ok(mut order_system) =
+                prepared_orders_monitor.1.wait_while(guard, |state| state.0)
             {
                 order_system.0 = true;
                 order_system.1 += 1;
@@ -143,16 +142,15 @@ impl Dispenser {
             {
                 if !order_system.there_are_orders_left() {
                     result = None;
-                } else {
-                    if let Some(_order) = order_system.get_order() {
-                        order = _order;
-                        println!(
-                            "[dispenser number {}] Order number {:?}",
-                            self.dispenser_number,
-                            order.get_order_number()
-                        );
-                        result = Some(order);
-                    }
+                } else if let Some(_order) = order_system.get_order(){
+                
+                    order = _order;
+                    println!(
+                        "[dispenser number {}] Order number {:?}",
+                        self.dispenser_number,
+                        order.get_order_number()
+                    );
+                    result = Some(order);
                 }
             }
         }
@@ -169,14 +167,13 @@ impl Dispenser {
         order_queue_monitor: &Arc<(Mutex<OrderSystem>, Condvar)>,
         prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>,
     ) -> Result<bool, String> {
-
         if let Some(order) = self.take_order_from_queue(order_queue_monitor) {
             let result = self.prepare_order(
                 order,
-                &coffee_container,
-                &foam_container,
-                &water_container,
-                &cocoa_container,
+                coffee_container,
+                foam_container,
+                water_container,
+                cocoa_container,
             );
 
             match result {
@@ -186,7 +183,7 @@ impl Dispenser {
                     }
                     return Ok(false);
                 }
-                Err(msg) => return Err(String::from(msg)),
+                Err(msg) => return Err(msg),
             }
         }
         Ok(true)

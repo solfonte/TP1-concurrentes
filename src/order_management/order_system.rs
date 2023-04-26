@@ -34,7 +34,7 @@ impl OrderSystem {
     }
 
     pub fn there_are_orders_left(&self) -> bool {
-        !(self.finished_queueing && self.order_queue.is_empty()) || !self.order_queue.is_empty()
+        !(self.finished_queueing && self.order_queue.is_empty())
     }
 
     pub fn get_order(&mut self) -> Option<Order> {

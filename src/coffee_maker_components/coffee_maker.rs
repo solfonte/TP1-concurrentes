@@ -1,10 +1,11 @@
 use crate::{
-    coffee_maker::{
+    coffee_maker_components::{
         dispenser::Dispenser, network_rechargeable_container::NetworkRechargeableContainer,
         rechargeable_container::RechargeableContainer,
         unrechargeable_container::UnrechargeableContainer,
     },
-    order::order_system::OrderSystem, statistics_checker::statistic::Statatistic,
+    order_management::order_system::OrderSystem,
+    statistics_checker::statistic::Statatistic,
 };
 use std::{
     sync::{Arc, Condvar, Mutex},
@@ -15,8 +16,8 @@ const COFFEE_RECHARGING_RATE: u32 = 10;
 const FOAM_RECHARGING_RATE: u32 = 5;
 
 use super::{
-    container_rechargeable_controller::ContainerRechargerController,
-    provider_container::ProviderContainer, container::Container,
+    container::Container, container_rechargeable_controller::ContainerRechargerController,
+    provider_container::ProviderContainer,
 };
 //capaz no tienen que ser ARC los atributos, sino solo el coffee maker
 
@@ -46,7 +47,7 @@ fn start_dispenser(
                 &water_container_clone,
                 &cocoa_container,
                 &order_queue_monitor,
-                &prepared_orders_monitor_clone
+                &prepared_orders_monitor_clone,
             ) {
                 finish_processing_orders = finished_processing;
             } else {
@@ -66,20 +67,14 @@ pub struct CoffeeMaker {
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
     water_container: Arc<NetworkRechargeableContainer>,
-    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>, 
+    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
     dispenser_amount: u32,
 }
 
 impl CoffeeMaker {
     pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
-        let grain_container = Arc::new(ProviderContainer::new(
-            g,
-            String::from("granos"),
-        ));
-        let milk_container = Arc::new(ProviderContainer::new(
-            l,
-            String::from("milk"),
-        ));
+        let grain_container = Arc::new(ProviderContainer::new(g, String::from("granos")));
+        let milk_container = Arc::new(ProviderContainer::new(l, String::from("milk")));
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
             m,
             String::from("cafe"),
@@ -92,14 +87,8 @@ impl CoffeeMaker {
             ContainerRechargerController::new(milk_container.clone()),
             FOAM_RECHARGING_RATE,
         ));
-        let cocoa_container = Arc::new(UnrechargeableContainer::new(
-            c,
-            String::from("cacao"),
-        ));
-        let water_container = Arc::new(NetworkRechargeableContainer::new(
-            a,
-            String::from("agua"),
-        ));
+        let cocoa_container = Arc::new(UnrechargeableContainer::new(c, String::from("cacao")));
+        let water_container = Arc::new(NetworkRechargeableContainer::new(a, String::from("agua")));
         Self {
             grain_container,
             milk_container,
@@ -137,7 +126,6 @@ impl CoffeeMaker {
     }
 
     pub fn turn_on(&self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
-
         let dispenser_handles = self.turn_dispensers_on(
             self.ground_coffee_container.clone(),
             self.milk_foam_container.clone(),
@@ -178,11 +166,11 @@ impl CoffeeMaker {
     }
 
     pub fn get_amount_drinks_prepared(&self) -> u32 {
-
         let mut amount = 0;
 
         if let Ok(guard) = self.prepared_orders_monitor.0.lock() {
-            if let Ok(mut order_system) = self.prepared_orders_monitor
+            if let Ok(mut order_system) = self
+                .prepared_orders_monitor
                 .1
                 .wait_while(guard, |state| state.0)
             {

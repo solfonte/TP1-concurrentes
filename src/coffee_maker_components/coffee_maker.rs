@@ -69,6 +69,7 @@ pub struct CoffeeMaker {
     water_container: Arc<NetworkRechargeableContainer>,
     prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
     dispenser_amount: u32,
+    power_monitor: Arc<(Mutex<(bool, bool)>, Condvar)>,
 }
 
 impl CoffeeMaker {
@@ -98,6 +99,7 @@ impl CoffeeMaker {
             water_container,
             prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
             dispenser_amount: n,
+            power_monitor: Arc::new((Mutex::new((false, true)), Condvar::new())),
         }
     }
 
@@ -125,6 +127,34 @@ impl CoffeeMaker {
         dispenser_handles
     }
 
+    fn turn_off(&self) {
+        if let Ok(guard) = self.power_monitor.0.lock() {
+            if let Ok(mut power_state) =
+                self.power_monitor.1.wait_while(guard, |state| state.0)
+            {
+                power_state.0 = true;
+                power_state.1 = false;
+                power_state.0 = false;
+            }
+            self.power_monitor.1.notify_all();
+        }
+    }
+
+    fn is_turned_off(&self) -> bool {
+        let mut is_turned_off = true;
+        if let Ok(guard) = self.power_monitor.0.lock() {
+            if let Ok(mut power_state) =
+                self.power_monitor.1.wait_while(guard, |state| state.0)
+            {
+                power_state.0 = true;
+                is_turned_off = power_state.1;
+                power_state.0 = false;
+            }
+            self.power_monitor.1.notify_all();
+        }
+        is_turned_off
+    }
+
     pub fn turn_on(&self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
         let dispenser_handles = self.turn_dispensers_on(
             self.ground_coffee_container.clone(),
@@ -133,6 +163,7 @@ impl CoffeeMaker {
             self.water_container.clone(),
             &order_queue_monitor,
         );
+        self.turn_off();
 
         for d_handle in dispenser_handles {
             if let Ok(dispenser_number) = d_handle.join() {
@@ -141,28 +172,20 @@ impl CoffeeMaker {
         }
     }
 
-    pub fn get_cocoa_statistics(&self) -> Statatistic {
-        self.cocoa_container.get_statistics()
-    }
+    pub fn get_containers_statistics(&self) -> (Vec<Statatistic>, u32, bool) {
+        let mut statistics_vec = Vec::new();
+        statistics_vec.push(self.grain_container.get_statistics());
+        statistics_vec.push(self.milk_container.get_statistics());
+        statistics_vec.push(self.milk_foam_container.get_statistics());
+        statistics_vec.push(self.ground_coffee_container.get_statistics());
+        statistics_vec.push(self.cocoa_container.get_statistics());
+        statistics_vec.push(self.water_container.get_statistics());
 
-    pub fn get_coffee_grain_statistics(&self) -> Statatistic {
-        self.grain_container.get_statistics()
-    }
+        let amount_drinks_prepared = self.get_amount_drinks_prepared();
 
-    pub fn get_ground_coffee_statistics(&self) -> Statatistic {
-        self.ground_coffee_container.get_statistics()
-    }
+        let is_turned_off = self.is_turned_off();
 
-    pub fn get_milk_statistics(&self) -> Statatistic {
-        self.milk_container.get_statistics()
-    }
-
-    pub fn get_water_statistics(&self) -> Statatistic {
-        self.water_container.get_statistics()
-    }
-
-    pub fn get_milk_foam_statistics(&self) -> Statatistic {
-        self.milk_foam_container.get_statistics()
+        (statistics_vec, amount_drinks_prepared, is_turned_off)
     }
 
     pub fn get_amount_drinks_prepared(&self) -> u32 {

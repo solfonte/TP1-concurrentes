@@ -1,5 +1,6 @@
 use crate::{order_management::order::Order, order_management::order_system::OrderSystem};
 use std::sync::{Arc, Condvar, Mutex};
+use serde::{Serialize, Deserialize};
 
 pub struct Robot {
     vector_pos: usize,
@@ -11,10 +12,14 @@ impl Robot {
         Self {
             vector_pos: 0,
             vector: Vec::from([
-                String::from("10;9;3;5"),
-                String::from("10;9;3;5"),
                 String::from("10;0;3;5"),
                 String::from("10;9;3;5"),
+                String::from("2;0;0;5"),
+                String::from("0;9;3;5"),
+                String::from("0;1;4;0"),
+                String::from("5;2;3;5"),
+                String::from("1;0;3;5"),
+                String::from("6;9;3;5"),
             ]),
         }
     }

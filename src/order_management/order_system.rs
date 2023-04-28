@@ -29,10 +29,6 @@ impl OrderSystem {
         self.finished_queueing = false;
     }
 
-    pub fn set_busy(&mut self, busy: bool) {
-        self.busy = busy;
-    }
-
     pub fn there_are_orders_left(&self) -> bool {
         !(self.finished_queueing && self.order_queue.is_empty())
     }

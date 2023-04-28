@@ -40,7 +40,7 @@ fn main() {
         let mut continue_printing_statistics = true;
 
         while continue_printing_statistics {
-            thread::sleep(Duration::from_millis(200));
+            thread::sleep(Duration::from_millis(5));
             continue_printing_statistics = statistics_checker.print_statistics();
             //El sistema debe alertar por consola cuando los contenedores de granos, leche y cacao se encuentran por debajo de X% de capacidad.
         }

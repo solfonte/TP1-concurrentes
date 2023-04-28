@@ -173,14 +173,14 @@ impl CoffeeMaker {
     }
 
     pub fn get_containers_statistics(&self) -> (Vec<Statatistic>, u32, bool) {
-        let mut statistics_vec = Vec::new();
-        statistics_vec.push(self.grain_container.get_statistics());
-        statistics_vec.push(self.milk_container.get_statistics());
-        statistics_vec.push(self.milk_foam_container.get_statistics());
-        statistics_vec.push(self.ground_coffee_container.get_statistics());
-        statistics_vec.push(self.cocoa_container.get_statistics());
-        statistics_vec.push(self.water_container.get_statistics());
-
+        let statistics_vec = vec![
+            self.grain_container.get_statistics(),
+            self.milk_container.get_statistics(),
+            self.milk_foam_container.get_statistics(),
+            self.ground_coffee_container.get_statistics(),
+            self.cocoa_container.get_statistics(),
+            self.water_container.get_statistics(),
+        ];
         let amount_drinks_prepared = self.get_amount_drinks_prepared();
 
         let is_turned_off = self.is_turned_off();

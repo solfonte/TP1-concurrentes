@@ -1,10 +1,14 @@
-#[derive(Debug)]
+extern crate serde;
+use serde_derive::Deserialize;
+
+
+#[derive(Debug, Deserialize)]
 pub struct Order {
-    order_number: u32,
-    coffee_amount: u32,
-    cocoa_amount: u32,
-    milk_foam_amount: u32,
-    water_amount: u32,
+    pub order_number: u32,
+    pub coffee_amount: u32,
+    pub cocoa_amount: u32,
+    pub milk_foam_amount: u32,
+    pub water_amount: u32,
 }
 
 impl Order {

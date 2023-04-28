@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::{self, Instant}};
+use std::sync::Arc;
 
 use crate::coffee_maker_components::coffee_maker::CoffeeMaker;
 

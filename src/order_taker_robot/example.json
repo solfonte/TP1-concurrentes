@@ -1,0 +1,30 @@
+[
+    {
+        "order_number": 0,
+        "coffee_amount": 10,
+        "cocoa_amount": 0,
+        "milk_foam_amount": 3,
+        "water_amount": 5
+    },
+    {
+        "order_number": 0,
+        "coffee_amount": 10,
+        "cocoa_amount": 0,
+        "milk_foam_amount": 3,
+        "water_amount": 5
+    },
+    {
+        "order_number": 0,
+        "coffee_amount": 10,
+        "cocoa_amount": 0,
+        "milk_foam_amount": 3,
+        "water_amount": 5
+    },
+    {
+        "order_number": 0,
+        "coffee_amount": 10,
+        "cocoa_amount": 0,
+        "milk_foam_amount": 3,
+        "water_amount": 5
+    }
+]

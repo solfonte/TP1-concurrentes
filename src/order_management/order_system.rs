@@ -21,6 +21,10 @@ impl OrderSystem {
         self.busy
     }
 
+    pub fn set_busy(&mut self, state: bool) {
+        self.busy = state;
+    }
+
     pub fn save_order(&mut self, order: Order) {
         self.order_queue.push_back(order);
     }

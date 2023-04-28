@@ -88,7 +88,7 @@ impl NetworkRechargeableContainer {
     }
 
     fn recharge_from_network(&self, max_capacity: u32, amount_to_recharge: u32) -> u32 {
-        thread::sleep(Duration::from_secs(
+        thread::sleep(Duration::from_millis(
             (amount_to_recharge as u64) / NETWORK_LOADING_RATE,
         ));
         max_capacity

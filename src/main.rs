@@ -3,7 +3,7 @@ mod order_management;
 mod order_taker_robot;
 mod statistics_checker;
 
-
+use std::env;
 use std::sync::{Condvar, Mutex};
 use std::time::Duration;
 use std::{sync::Arc, thread};
@@ -23,9 +23,11 @@ const C: u32 = 30;
 const A: u32 = 30;
 
 fn main() {
+    let mut dir = env::current_dir().unwrap().into_os_string();
+
     let coffee_maker = Arc::new(CoffeeMaker::new(G, M, L, E, C, A, N));
     let monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
-    let mut robot = Robot::new();
+    let mut robot = Robot::new(String::from("src/order_taker_robot/example.json"));
 
     let monitor_pair_clone = monitor_pair.clone();
     let coffee_maker_clone = coffee_maker.clone();
@@ -51,16 +53,16 @@ fn main() {
 
         let monitor_pair_clone_robot = monitor_pair.clone();
 
-        while there_are_orders_left {
-            let result = robot.take_order();
-
-            if let Some(order) = result {
-                robot.queue_order(Some(order), &monitor_pair_clone_robot);
-            } else {
-                robot.queue_order(None, &monitor_pair_clone_robot);
-                there_are_orders_left = false;
+        //TODO: check res. Poner en el informe que en un principio pense en hacer de a una y despues cambie y los motivos
+        match robot.take_orders() {
+            Ok(orders) => { 
+                robot.queue_orders(orders, &monitor_pair_clone_robot);
+            }, 
+            Err(msg) => {
+                //TODO: frenar todo
             }
         }
+        
     });
 
     coffe_make_handle.join().unwrap();

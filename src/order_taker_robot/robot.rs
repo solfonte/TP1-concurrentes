@@ -1,53 +1,41 @@
+use serde_json::Deserializer;
+
 use crate::{order_management::order::Order, order_management::order_system::OrderSystem};
-use std::sync::{Arc, Condvar, Mutex};
-use serde::{Serialize, Deserialize};
+use std::{sync::{Arc, Condvar, Mutex}, collections::VecDeque};
+
+use super::file_reader::FileReader;
+use serde_json::Value;
 
 pub struct Robot {
-    vector_pos: usize,
-    vector: Vec<String>,
+    file_reader: FileReader
 }
 
 impl Robot {
-    pub fn new() -> Self {
+    pub fn new(file_name: String) -> Self {
         Self {
-            vector_pos: 0,
-            vector: Vec::from([
-                String::from("10;0;3;5"),
-                String::from("10;9;3;5"),
-                String::from("2;0;0;5"),
-                String::from("0;9;3;5"),
-                String::from("0;1;4;0"),
-                String::from("5;2;3;5"),
-                String::from("1;0;3;5"),
-                String::from("6;9;3;5"),
-            ]),
+            file_reader: FileReader::new(file_name)
         }
     }
 
-    pub fn take_order(&mut self) -> Option<Order> {
-        if self.vector_pos < self.vector.len() {
-            let mut order_vec = Vec::new();
-            for j in self.vector[self.vector_pos].split(';') {
-                order_vec.push(j.parse::<u32>().unwrap())
+    pub fn take_orders(&mut self) -> Result<Vec<Order>, String> {
+        match self.file_reader.read() {
+            Ok(orders_string) => {
+                let stream = serde_json::from_str::<Vec<Order>>(&orders_string);
+                match stream {
+                    Ok(order_queue) => Ok(order_queue),
+                    Err(err) => Err(err.to_string())
+                } 
+            },
+            Err(error_msg) => {
+                Err(error_msg)
             }
-            let order_number = self.vector_pos;
-            self.vector_pos += 1;
-
-            Some(Order::new(
-                order_number as u32,
-                order_vec[0],
-                order_vec[1],
-                order_vec[2],
-                order_vec[3],
-            ))
-        } else {
-            None
         }
+
     }
 
-    pub fn queue_order(
+    pub fn queue_orders(
         &self,
-        order: Option<Order>,
+        orders: Vec<Order>,
         order_queue_monitor: &Arc<(Mutex<OrderSystem>, Condvar)>,
     ) {
         if let Ok(guard) = order_queue_monitor.0.lock() {
@@ -55,12 +43,11 @@ impl Robot {
                 .1
                 .wait_while(guard, |state| state.is_busy())
             {
-                if let Some(_order) = order {
-                    //println!("{:?}", _order);
-                    order_system.save_order(_order);
-                } else {
-                    order_system.set_finished_queueing();
+                order_system.set_busy(true);
+                for order in orders {
+                    order_system.save_order(order);
                 }
+                order_system.set_busy(false);
             }
         }
         order_queue_monitor.1.notify_all();

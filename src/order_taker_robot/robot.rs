@@ -284,4 +284,14 @@ mod robot_test {
             }
         };
     }
+
+    #[test]
+    fn test08_when_the_file_does_not_exist_the_robot_returns_the_correct_error() {
+        let mut robot = Robot::new(String::from("src/test_order_files/fake.json"));
+        let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
+
+        let result = robot.take_orders(&orders_monitor_pair);
+
+        assert!(result.is_err());
+    }
 }

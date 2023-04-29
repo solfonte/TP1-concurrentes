@@ -4,27 +4,70 @@ mod order_taker_robot;
 mod statistics_checker;
 
 use coffee_maker_components::coffee_maker::CoffeeMaker;
+use coffee_maker_components::configuration::{ConfigurationReader, CoffeeMakerConfiguration};
 use order_management::order_system::OrderSystem;
 use order_taker_robot::robot::Robot;
 use statistics_checker::statistic_checker::StatisticsChecker;
+use std::env;
 use std::sync::{Condvar, Mutex};
 use std::time::Duration;
 use std::{sync::Arc, thread};
 
-//TODO: read from file
-const N: u32 = 10;
-const G: u32 = 30;
-const M: u32 = 30;
-const L: u32 = 30;
-const E: u32 = 30;
-const C: u32 = 30;
-const A: u32 = 30;
+fn validate_arguments() -> Option<(String, String)> {
+    let args: Vec<String> = env::args().collect();
+
+    match args.len() {
+        0 | 1 => { 
+            println!("[ERROR]: missing arguuments. Remember to run the program with the following arguments:");
+            println!("Cargo run -- <orders-file-path> <config-file>");
+            None
+        },
+        2 => {
+            if args[1] == "help" {
+                println!("To run the program with the following arguments:");
+                println!("Cargo run -- <orders-file-path> <config-file>");
+            }
+            None
+        }
+        3 => {
+            Some((args[1].clone(), args[2].clone()))
+        },
+        _ => None
+    }
+}
+
 
 fn main() {
-    let coffee_maker = Arc::new(CoffeeMaker::new(G, M, L, E, C, A, N));
+    
+    let orders_file: String;
+    let configs_file: String;
+
+    match validate_arguments() {
+        Some(files_pair) => {
+            orders_file = files_pair.0;
+            configs_file = files_pair.1;
+        },
+        None => {
+            println!("No leyo");
+            return;
+        }
+    }
+    let configuration: CoffeeMakerConfiguration;
+    println!("{}", configs_file);
+    let configuration_reader = ConfigurationReader::new(configs_file);
+
+    match configuration_reader.read_configuration() {
+        Ok(c) => {configuration = c},
+        Err(msg) => {
+            println!("[Error] While reading configuration: {}", msg);
+            return;
+        }
+    }
+
+    let coffee_maker = Arc::new(CoffeeMaker::new(configuration));
     let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
     let mut robot = Robot::new(String::from(
-        "src/orders_files/multiple_coffee_with_milk_orders.json",
+        orders_file,
     ));
 
     let orders_monitor_pair_clone = orders_monitor_pair.clone();

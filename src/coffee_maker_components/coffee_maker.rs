@@ -17,7 +17,7 @@ const FOAM_RECHARGING_RATE: u32 = 5;
 
 use super::{
     container::Container, container_rechargeable_controller::ContainerRechargerController,
-    provider_container::ProviderContainer,
+    provider_container::ProviderContainer, configuration::CoffeeMakerConfiguration,
 };
 
 pub struct PowerState {
@@ -77,23 +77,23 @@ pub struct CoffeeMaker {
 }
 
 impl CoffeeMaker {
-    pub fn new(g: u32, m: u32, l: u32, e: u32, c: u32, a: u32, n: u32) -> Self {
-        let grain_container = Arc::new(ProviderContainer::new(g, String::from("granos")));
-        let milk_container = Arc::new(ProviderContainer::new(l, String::from("milk")));
+    pub fn new(configuration: CoffeeMakerConfiguration) -> Self {
+        let grain_container = Arc::new(ProviderContainer::new(configuration.grain_capacity, String::from("granos")));
+        let milk_container = Arc::new(ProviderContainer::new(configuration.milk_capacity, String::from("milk")));
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
-            m,
+            configuration.ground_coffee_capacity,
             String::from("cafe"),
             ContainerRechargerController::new(grain_container.clone()),
             COFFEE_RECHARGING_RATE,
         ));
         let milk_foam_container = Arc::new(RechargeableContainer::new(
-            e,
+            configuration.milk_foam_capacity,
             String::from("espuma"),
             ContainerRechargerController::new(milk_container.clone()),
             FOAM_RECHARGING_RATE,
         ));
-        let cocoa_container = Arc::new(UnrechargeableContainer::new(c, String::from("cacao")));
-        let water_container = Arc::new(NetworkRechargeableContainer::new(a, String::from("agua")));
+        let cocoa_container = Arc::new(UnrechargeableContainer::new(configuration.cocoa_capacity, String::from("cacao")));
+        let water_container = Arc::new(NetworkRechargeableContainer::new(configuration.water_capacity, String::from("agua")));
         Self {
             grain_container,
             milk_container,
@@ -102,7 +102,7 @@ impl CoffeeMaker {
             cocoa_container,
             water_container,
             prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
-            dispenser_amount: n,
+            dispenser_amount: configuration.dispenser_amount,
             power_monitor: Arc::new((
                 Mutex::new(PowerState {
                     busy: false,

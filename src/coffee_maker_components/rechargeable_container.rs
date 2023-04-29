@@ -83,7 +83,6 @@ impl RechargeableContainer {
     }
 
     pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, &str> {
-       
         system.busy = true;
 
         if system.amount < extraction {
@@ -108,7 +107,6 @@ impl RechargeableContainer {
     }
 }
 
-
 #[cfg(test)]
 mod rechargeable_container_test {
     use crate::coffee_maker_components::container::Container;
@@ -120,7 +118,6 @@ mod rechargeable_container_test {
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
-
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
             ProviderContainer::new(0, String::from("Provider")),
         ));
@@ -310,7 +307,7 @@ mod rechargeable_container_test {
             2,
             String::from("Rechargeable container"),
             container_recharger_controller,
-        1,
+            1,
         );
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2);

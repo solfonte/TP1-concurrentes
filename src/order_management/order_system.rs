@@ -49,8 +49,8 @@ impl OrderSystem {
         self.finished_queueing
     }
 
+    #[allow(dead_code)]
     pub fn amount_left_orders(&self) -> usize {
         self.order_queue.len()
     }
-
 }

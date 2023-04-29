@@ -7,10 +7,9 @@ pub struct StatisticsChecker {
 }
 
 impl StatisticsChecker {
-
     pub fn print_statistics(&self) -> bool {
         let statistics = self.coffee_maker.get_containers_statistics();
-        
+
         for stat in statistics.0 {
             println!(
                 "[{}] amount left: {}, amount consumed: {}, ",
@@ -23,13 +22,11 @@ impl StatisticsChecker {
         if !statistics.2 {
             println!("Coffee machine is off");
         }
-        
-        statistics.2   
+
+        statistics.2
     }
 
     pub fn new(coffee_maker: Arc<CoffeeMaker>) -> Self {
         Self { coffee_maker }
     }
-
-    
 }

@@ -1,13 +1,16 @@
-use crate::{
-    coffee_maker_components::container::Container,
-    order_management::{order::Order, order_system::OrderSystem},
-};
-use std::{sync::{Arc, Condvar, Mutex}, thread};
-use std::time::Duration;
 use super::{
     network_rechargeable_container::NetworkRechargeableContainer,
     rechargeable_container::RechargeableContainer,
     unrechargeable_container::UnrechargeableContainer,
+};
+use crate::{
+    coffee_maker_components::container::Container,
+    order_management::{order::Order, order_system::OrderSystem},
+};
+use std::time::Duration;
+use std::{
+    sync::{Arc, Condvar, Mutex},
+    thread,
 };
 
 pub struct Dispenser {}
@@ -134,16 +137,14 @@ impl Dispenser {
         let mut result = None;
 
         if let Ok(guard) = order_queue_monitor.0.lock() {
-            if let Ok(mut order_system) = order_queue_monitor
-                .1
-                .wait_while(guard, |state| state.is_busy() && state.queue_is_empty() && !state.finished_queueing())
-            {
+            if let Ok(mut order_system) = order_queue_monitor.1.wait_while(guard, |state| {
+                state.is_busy() && state.queue_is_empty() && !state.finished_queueing()
+            }) {
                 order_system.set_busy(true);
                 if !order_system.there_are_orders_left() {
                     result = None;
                     println!("no hay mas ordenes");
-
-                } else if let Some(_order) = order_system.get_order(){
+                } else if let Some(_order) = order_system.get_order() {
                     order = _order;
                     result = Some(order);
                 }
@@ -186,24 +187,22 @@ impl Dispenser {
     }
 }
 
-
 #[cfg(test)]
 mod dispenser_test {
 
     use crate::coffee_maker_components;
     use crate::coffee_maker_components::dispenser::Dispenser;
     use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
-    use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
     use crate::coffee_maker_components::rechargeable_container::RechargeableContainer;
+    use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;
     use crate::coffee_maker_components::{
         container_rechargeable_controller::ContainerRechargerController,
         provider_container::ProviderContainer,
     };
     use crate::order_management::order::Order;
-    use std::sync::Arc;
     use coffee_maker_components::container::Container;
+    use std::sync::Arc;
 
-    
     #[test]
     fn test01_when_dispensing_three_units_from_unrechargeable_container_which_are_available_the_dispenser_returns_three_units(
     ) {
@@ -267,7 +266,6 @@ mod dispenser_test {
     #[test]
     fn test05_when_dispensing_three_units_from_rechargeable_container_which_are_not_available_and_cannot_be_recharged_the_dispenser_returns_cero_units(
     ) {
-
         let units = 3;
 
         let container = RechargeableContainer::new(
@@ -301,7 +299,6 @@ mod dispenser_test {
     #[test]
     fn test07_when_dispensing_three_units_from_rechargeable_container_which_are_available_and_can_be_recharged_the_dispenser_returns_three_units(
     ) {
-
         let units = 3;
 
         let container = RechargeableContainer::new(
@@ -322,11 +319,10 @@ mod dispenser_test {
     #[test]
     fn test08_when_preparing_an_order_and_all_ingredients_are_available_the_dispenser_result_is_one(
     ) {
-
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -348,7 +344,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -360,10 +356,10 @@ mod dispenser_test {
     #[test]
     fn test09_when_preparing_an_order_and_all_ingredients_except_from_cocoa_are_available_the_dispenser_result_is_cero(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -386,7 +382,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -398,10 +394,10 @@ mod dispenser_test {
     #[test]
     fn test10_when_preparing_an_order_and_all_ingredients_except_from_coffee_which_cannot_be_recharged_are_available_the_dispenser_result_is_cero(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(0, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -424,7 +420,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -436,10 +432,10 @@ mod dispenser_test {
     #[test]
     fn test11_when_preparing_an_order_and_all_ingredients_except_from_coffee_are_available_the_dispenser_result_is_cero(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -463,7 +459,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -475,10 +471,10 @@ mod dispenser_test {
     #[test]
     fn test12_when_preparing_an_order_and_all_ingredients_except_from_water_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -502,7 +498,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -514,10 +510,10 @@ mod dispenser_test {
     #[test]
     fn test13_when_preparing_an_order_and_all_ingredients_except_from_coffee_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -542,7 +538,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -554,10 +550,10 @@ mod dispenser_test {
     #[test]
     fn test14_when_preparing_an_order_and_all_ingredients_except_from_foam_which_can_be_recharged_are_available_the_dispenser_result_is_one(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -582,7 +578,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -594,9 +590,9 @@ mod dispenser_test {
     #[test]
     fn test15_when_preparing_an_order_with_cero_coffee_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        let cocoa_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -620,7 +616,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, 0, cocoa_units, foam_units, water_units),
+            Order{order_number: 1, coffee_amount: 0, cocoa_amount, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -633,10 +629,9 @@ mod dispenser_test {
     #[test]
     fn test16_when_preparing_an_order_with_cero_cocoa_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-
-        let coffee_units = 3;
-        let foam_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let milk_foam_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -660,7 +655,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, 0, foam_units, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount: 0, milk_foam_amount, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -673,9 +668,9 @@ mod dispenser_test {
     #[test]
     fn test17_when_preparing_an_order_with_cero_milk_foam_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let water_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let water_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -699,7 +694,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, 0, water_units),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount: 0, water_amount},
             &coffee_container,
             &foam_container,
             &water_container,
@@ -712,9 +707,9 @@ mod dispenser_test {
     #[test]
     fn test17_when_preparing_an_order_with_cero_water_and_ingredients_available_the_result_is_one_order_prepared(
     ) {
-        let coffee_units = 3;
-        let cocoa_units = 3;
-        let foam_units = 3;
+        let coffee_amount = 3;
+        let cocoa_amount = 3;
+        let milk_foam_amount = 3;
 
         let grain_container = ProviderContainer::new(10, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
@@ -738,7 +733,7 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order::new(1, coffee_units, cocoa_units, foam_units, 0),
+            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount: 0},
             &coffee_container,
             &foam_container,
             &water_container,

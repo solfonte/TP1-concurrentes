@@ -3,14 +3,13 @@ mod order_management;
 mod order_taker_robot;
 mod statistics_checker;
 
-use std::sync::{Condvar, Mutex};
-use std::time::Duration;
-use std::{sync::Arc, thread};
 use coffee_maker_components::coffee_maker::CoffeeMaker;
 use order_management::order_system::OrderSystem;
 use order_taker_robot::robot::Robot;
 use statistics_checker::statistic_checker::StatisticsChecker;
-
+use std::sync::{Condvar, Mutex};
+use std::time::Duration;
+use std::{sync::Arc, thread};
 
 //TODO: read from file
 const N: u32 = 10;
@@ -24,7 +23,9 @@ const A: u32 = 30;
 fn main() {
     let coffee_maker = Arc::new(CoffeeMaker::new(G, M, L, E, C, A, N));
     let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
-    let mut robot = Robot::new(String::from("src/orders_files/multiple_coffee_with_milk_orders.json"));
+    let mut robot = Robot::new(String::from(
+        "src/orders_files/multiple_coffee_with_milk_orders.json",
+    ));
 
     let orders_monitor_pair_clone = orders_monitor_pair.clone();
     let coffee_maker_clone = coffee_maker.clone();
@@ -50,11 +51,11 @@ fn main() {
 
         //TODO: Poner en el informe que en un principio pense en hacer de a una y despues cambie y los motivos
         match robot.take_orders(&orders_monitor_pair_clone_robot) {
-            Ok(_) => {}, 
+            Ok(_) => {}
             Err(error_msg) => {
                 println!("[Error while taking the orders]: {}", error_msg)
             }
-        }    
+        }
     });
 
     if coffe_make_handle.join().is_ok() {

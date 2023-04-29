@@ -22,7 +22,7 @@ use super::{
 
 pub struct PowerState {
     pub busy: bool,
-    pub on: bool
+    pub on: bool,
 }
 
 fn start_dispenser(
@@ -103,7 +103,13 @@ impl CoffeeMaker {
             water_container,
             prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
             dispenser_amount: n,
-            power_monitor: Arc::new((Mutex::new(PowerState {busy: false, on: true}), Condvar::new())),
+            power_monitor: Arc::new((
+                Mutex::new(PowerState {
+                    busy: false,
+                    on: true,
+                }),
+                Condvar::new(),
+            )),
         }
     }
 
@@ -117,7 +123,7 @@ impl CoffeeMaker {
     ) -> Vec<JoinHandle<u32>> {
         let mut dispenser_handles = Vec::new();
         for i in 0..self.dispenser_amount {
-        println!("[dispenser {i}] turned on");
+            println!("[dispenser {i}] turned on");
             let dispenser_handle = start_dispenser(
                 i,
                 order_queue_monitor.clone(),
@@ -134,8 +140,7 @@ impl CoffeeMaker {
 
     fn turn_off(&self) {
         if let Ok(guard) = self.power_monitor.0.lock() {
-            if let Ok(mut power_state) =
-                self.power_monitor.1.wait_while(guard, |state| state.busy)
+            if let Ok(mut power_state) = self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
                 power_state.busy = true;
                 power_state.on = false;
@@ -148,8 +153,7 @@ impl CoffeeMaker {
     fn is_turned_off(&self) -> bool {
         let mut is_turned_off = true;
         if let Ok(guard) = self.power_monitor.0.lock() {
-            if let Ok(mut power_state) =
-                self.power_monitor.1.wait_while(guard, |state| state.busy)
+            if let Ok(mut power_state) = self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
                 power_state.busy = true;
                 is_turned_off = power_state.on;

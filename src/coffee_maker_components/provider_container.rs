@@ -94,7 +94,6 @@ impl ProviderContainer {
     }
 }
 
-
 #[cfg(test)]
 mod provider_container_test {
     use crate::coffee_maker_components::container::Container;

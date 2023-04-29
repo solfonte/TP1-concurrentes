@@ -95,14 +95,12 @@ impl NetworkRechargeableContainer {
     }
 }
 
-
-
 #[cfg(test)]
 mod network_rechargeable_container_test {
 
     use crate::coffee_maker_components::container::Container;
     use crate::coffee_maker_components::network_rechargeable_container::NetworkRechargeableContainer;
-    
+
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {

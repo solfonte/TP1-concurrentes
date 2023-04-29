@@ -2,21 +2,19 @@ use crate::{
     coffee_maker_components::container::Container,
     order_management::{order::Order, order_system::OrderSystem},
 };
-use std::sync::{Arc, Condvar, Mutex};
-
+use std::{sync::{Arc, Condvar, Mutex}, thread};
+use std::time::Duration;
 use super::{
     network_rechargeable_container::NetworkRechargeableContainer,
     rechargeable_container::RechargeableContainer,
     unrechargeable_container::UnrechargeableContainer,
 };
 
-pub struct Dispenser {
-    dispenser_number: u32,
-}
+pub struct Dispenser {}
 
 impl Dispenser {
-    pub fn new(dispenser_number: u32) -> Self {
-        Self { dispenser_number }
+    pub fn new() -> Self {
+        Self {}
     }
 
     pub fn dispense_resource<T: Container>(
@@ -27,7 +25,7 @@ impl Dispenser {
         let extraction_result = container.extract(ingredient_amount);
         match extraction_result {
             Ok(ingredient_taken) => {
-                // sleep
+                thread::sleep(Duration::from_millis(20 * ingredient_amount as u64));
                 Ok(ingredient_taken)
             }
             Err(msg) => {
@@ -138,20 +136,18 @@ impl Dispenser {
         if let Ok(guard) = order_queue_monitor.0.lock() {
             if let Ok(mut order_system) = order_queue_monitor
                 .1
-                .wait_while(guard, |state| state.is_busy())
+                .wait_while(guard, |state| state.is_busy() && state.queue_is_empty() && !state.finished_queueing())
             {
+                order_system.set_busy(true);
                 if !order_system.there_are_orders_left() {
                     result = None;
+                    println!("no hay mas ordenes");
+
                 } else if let Some(_order) = order_system.get_order(){
-                
                     order = _order;
-                    println!(
-                        "[dispenser number {}] Order number {:?}",
-                        self.dispenser_number,
-                        order.get_order_number()
-                    );
                     result = Some(order);
                 }
+                order_system.set_busy(false);
             }
         }
         order_queue_monitor.1.notify_all();
@@ -214,7 +210,7 @@ mod dispenser_test {
         let units = 3;
 
         let container = UnrechargeableContainer::new(10, String::from("container"));
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
 
@@ -235,7 +231,7 @@ mod dispenser_test {
             ))),
             1,
         );
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
 
@@ -248,7 +244,7 @@ mod dispenser_test {
         let units = 3;
 
         let container = NetworkRechargeableContainer::new(10, String::from("container"));
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
 
@@ -261,7 +257,7 @@ mod dispenser_test {
         let units = 3;
 
         let container = UnrechargeableContainer::new(5, String::from("container"));
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let _ = container.extract(4);
         let dispenser_result = dispenser.dispense_resource(units, &container);
 
@@ -284,7 +280,7 @@ mod dispenser_test {
             1,
         );
         let _ = container.extract(4);
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.dispense_resource(units, &container);
         assert_eq!(dispenser_result, Ok(0));
     }
@@ -295,7 +291,7 @@ mod dispenser_test {
         let units = 3;
 
         let container = NetworkRechargeableContainer::new(5, String::from("container"));
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let _ = container.extract(4);
         let dispenser_result = dispenser.dispense_resource(units, &container);
 
@@ -318,7 +314,7 @@ mod dispenser_test {
             1,
         );
         let _ = container.extract(4);
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.dispense_resource(units, &container);
         assert_eq!(dispenser_result, Ok(3));
     }
@@ -350,7 +346,7 @@ mod dispenser_test {
         let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -388,7 +384,7 @@ mod dispenser_test {
         let _ = cocoa_container.extract(5);
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -426,7 +422,7 @@ mod dispenser_test {
         let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -465,7 +461,7 @@ mod dispenser_test {
         let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -504,7 +500,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -544,7 +540,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -584,7 +580,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -622,7 +618,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, 0, cocoa_units, foam_units, water_units),
             &coffee_container,
@@ -662,7 +658,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, 0, foam_units, water_units),
             &coffee_container,
@@ -701,7 +697,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, 0, water_units),
             &coffee_container,
@@ -740,7 +736,7 @@ mod dispenser_test {
         let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
         let _ = water_container.extract(5);
 
-        let dispenser = Dispenser::new(0);
+        let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
             Order::new(1, coffee_units, cocoa_units, foam_units, 0),
             &coffee_container,

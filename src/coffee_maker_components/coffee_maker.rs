@@ -19,7 +19,11 @@ use super::{
     container::Container, container_rechargeable_controller::ContainerRechargerController,
     provider_container::ProviderContainer,
 };
-//capaz no tienen que ser ARC los atributos, sino solo el coffee maker
+
+pub struct PowerState {
+    pub busy: bool,
+    pub on: bool
+}
 
 fn start_dispenser(
     dispenser_number: u32,
@@ -31,8 +35,7 @@ fn start_dispenser(
     water_container: Arc<NetworkRechargeableContainer>,
 ) -> JoinHandle<u32> {
     thread::spawn(move || {
-        //println!("[dispenser {dispenser_number}] turned on");
-        let dispenser = Dispenser::new(dispenser_number);
+        let dispenser = Dispenser::new();
         let ground_coffee_container_clone = ground_coffee_container.clone();
         let milk_foam_container_clone = milk_foam_container.clone();
         let water_container_clone = water_container.clone();
@@ -49,13 +52,14 @@ fn start_dispenser(
                 &order_queue_monitor,
                 &prepared_orders_monitor_clone,
             ) {
+                println!("termino de procesar el dispenser");
                 finish_processing_orders = finished_processing;
             } else {
-                /*TODO: condicion de error */
+                //TODO: revisar posible race condition
+                println!("CORTA PORQUE HUBO ERROR");
                 finish_processing_orders = true
             }
         }
-
         dispenser_number
     })
 }
@@ -69,7 +73,7 @@ pub struct CoffeeMaker {
     water_container: Arc<NetworkRechargeableContainer>,
     prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
     dispenser_amount: u32,
-    power_monitor: Arc<(Mutex<(bool, bool)>, Condvar)>,
+    power_monitor: Arc<(Mutex<PowerState>, Condvar)>,
 }
 
 impl CoffeeMaker {
@@ -99,7 +103,7 @@ impl CoffeeMaker {
             water_container,
             prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
             dispenser_amount: n,
-            power_monitor: Arc::new((Mutex::new((false, true)), Condvar::new())),
+            power_monitor: Arc::new((Mutex::new(PowerState {busy: false, on: true}), Condvar::new())),
         }
     }
 
@@ -113,6 +117,7 @@ impl CoffeeMaker {
     ) -> Vec<JoinHandle<u32>> {
         let mut dispenser_handles = Vec::new();
         for i in 0..self.dispenser_amount {
+        println!("[dispenser {i}] turned on");
             let dispenser_handle = start_dispenser(
                 i,
                 order_queue_monitor.clone(),
@@ -130,11 +135,11 @@ impl CoffeeMaker {
     fn turn_off(&self) {
         if let Ok(guard) = self.power_monitor.0.lock() {
             if let Ok(mut power_state) =
-                self.power_monitor.1.wait_while(guard, |state| state.0)
+                self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
-                power_state.0 = true;
-                power_state.1 = false;
-                power_state.0 = false;
+                power_state.busy = true;
+                power_state.on = false;
+                power_state.busy = false;
             }
             self.power_monitor.1.notify_all();
         }
@@ -144,11 +149,11 @@ impl CoffeeMaker {
         let mut is_turned_off = true;
         if let Ok(guard) = self.power_monitor.0.lock() {
             if let Ok(mut power_state) =
-                self.power_monitor.1.wait_while(guard, |state| state.0)
+                self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
-                power_state.0 = true;
-                is_turned_off = power_state.1;
-                power_state.0 = false;
+                power_state.busy = true;
+                is_turned_off = power_state.on;
+                power_state.busy = false;
             }
             self.power_monitor.1.notify_all();
         }
@@ -192,14 +197,14 @@ impl CoffeeMaker {
         let mut amount = 0;
 
         if let Ok(guard) = self.prepared_orders_monitor.0.lock() {
-            if let Ok(mut order_system) = self
+            if let Ok(mut prepared_orders_system) = self
                 .prepared_orders_monitor
                 .1
                 .wait_while(guard, |state| state.0)
             {
-                order_system.0 = true;
-                amount = order_system.1;
-                order_system.0 = false;
+                prepared_orders_system.0 = true;
+                amount = prepared_orders_system.1;
+                prepared_orders_system.0 = false;
             }
         }
         self.prepared_orders_monitor.1.notify_all();

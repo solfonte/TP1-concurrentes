@@ -30,4 +30,6 @@ impl StatisticsChecker {
     pub fn new(coffee_maker: Arc<CoffeeMaker>) -> Self {
         Self { coffee_maker }
     }
+
+    
 }

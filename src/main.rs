@@ -3,7 +3,6 @@ mod order_management;
 mod order_taker_robot;
 mod statistics_checker;
 
-use std::env;
 use std::sync::{Condvar, Mutex};
 use std::time::Duration;
 use std::{sync::Arc, thread};
@@ -23,17 +22,15 @@ const C: u32 = 30;
 const A: u32 = 30;
 
 fn main() {
-    let mut dir = env::current_dir().unwrap().into_os_string();
-
     let coffee_maker = Arc::new(CoffeeMaker::new(G, M, L, E, C, A, N));
-    let monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
-    let mut robot = Robot::new(String::from("src/order_taker_robot/example.json"));
+    let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
+    let mut robot = Robot::new(String::from("src/orders_files/multiple_coffee_with_milk_orders.json"));
 
-    let monitor_pair_clone = monitor_pair.clone();
+    let orders_monitor_pair_clone = orders_monitor_pair.clone();
     let coffee_maker_clone = coffee_maker.clone();
 
     let coffe_make_handle = thread::spawn(move || {
-        coffee_maker_clone.turn_on(monitor_pair_clone);
+        coffee_maker_clone.turn_on(orders_monitor_pair_clone);
     });
 
     let statistics_handle = thread::spawn(move || {
@@ -42,31 +39,27 @@ fn main() {
         let mut continue_printing_statistics = true;
 
         while continue_printing_statistics {
-            thread::sleep(Duration::from_millis(5));
+            thread::sleep(Duration::from_millis(1));
             continue_printing_statistics = statistics_checker.print_statistics();
-            //El sistema debe alertar por consola cuando los contenedores de granos, leche y cacao se encuentran por debajo de X% de capacidad.
+            //TODO:El sistema debe alertar por consola cuando los contenedores de granos, leche y cacao se encuentran por debajo de X% de capacidad.
         }
     });
 
     let order_preparation_handle = thread::spawn(move || {
-        let mut there_are_orders_left = true;
+        let orders_monitor_pair_clone_robot = orders_monitor_pair.clone();
 
-        let monitor_pair_clone_robot = monitor_pair.clone();
-
-        //TODO: check res. Poner en el informe que en un principio pense en hacer de a una y despues cambie y los motivos
-        match robot.take_orders() {
-            Ok(orders) => { 
-                robot.queue_orders(orders, &monitor_pair_clone_robot);
-            }, 
-            Err(msg) => {
-                //TODO: frenar todo
+        //TODO: Poner en el informe que en un principio pense en hacer de a una y despues cambie y los motivos
+        match robot.take_orders(&orders_monitor_pair_clone_robot) {
+            Ok(_) => {}, 
+            Err(error_msg) => {
+                println!("[Error while taking the orders]: {}", error_msg)
             }
-        }
-        
+        }    
     });
 
-    coffe_make_handle.join().unwrap();
-    order_preparation_handle.join().unwrap();
-    statistics_handle.join().unwrap();
-    //TODO: cambiar los unwrapps
+    if coffe_make_handle.join().is_ok() {
+        println!("Coffee maker turned off");
+    }
+    let _ = order_preparation_handle.join();
+    let _ = statistics_handle.join();
 }

@@ -1,0 +1,16 @@
+[
+    {
+        "order_number": 0,
+        "coffee_amount": 5,
+        "cocoa_amount": 0,
+        "milk_foam_amount": 5,
+        "water_amount": 3
+    },
+    {
+        "order_number": 1,
+        "coffee_amount": 1,
+        "cocoa_amount": 1,
+        "milk_foam_amount": 1,
+        "water_amount": 1
+    }
+]

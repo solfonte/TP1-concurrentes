@@ -30,7 +30,7 @@ impl OrderSystem {
     }
 
     pub fn set_finished_queueing(&mut self) {
-        self.finished_queueing = false;
+        self.finished_queueing = true;
     }
 
     pub fn there_are_orders_left(&self) -> bool {
@@ -40,4 +40,17 @@ impl OrderSystem {
     pub fn get_order(&mut self) -> Option<Order> {
         self.order_queue.pop_front()
     }
+
+    pub fn queue_is_empty(&self) -> bool {
+        self.order_queue.is_empty()
+    }
+
+    pub fn finished_queueing(&self) -> bool {
+        self.finished_queueing
+    }
+
+    pub fn amount_left_orders(&self) -> usize {
+        self.order_queue.len()
+    }
+
 }

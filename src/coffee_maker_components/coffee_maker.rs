@@ -5,7 +5,7 @@ use crate::{
         unrechargeable_container::UnrechargeableContainer,
     },
     order_management::order_system::OrderSystem,
-    statistics_checker::statistic::Statatistic,
+    statistics_checker::statistic::Statistic,
 };
 use std::{
     sync::{Arc, Condvar, Mutex},
@@ -16,19 +16,14 @@ const COFFEE_RECHARGING_RATE: u32 = 10;
 const FOAM_RECHARGING_RATE: u32 = 5;
 
 use super::{
-    container::Container, container_rechargeable_controller::ContainerRechargerController,
-    provider_container::ProviderContainer, configuration::CoffeeMakerConfiguration,
-};
-
-pub struct PowerState {
-    pub busy: bool,
-    pub on: bool,
-}
+    configuration::{CoffeeMakerConfiguration, SecureCounter, SecurePowerState}, container::Container,
+    container_rechargeable_controller::ContainerRechargerController,
+    provider_container::ProviderContainer};
 
 fn start_dispenser(
     dispenser_number: u32,
     order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>,
-    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
+    prepared_orders_monitor: Arc<(Mutex<SecureCounter>, Condvar)>,
     ground_coffee_container: Arc<RechargeableContainer>,
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
@@ -71,15 +66,21 @@ pub struct CoffeeMaker {
     milk_foam_container: Arc<RechargeableContainer>,
     cocoa_container: Arc<UnrechargeableContainer>,
     water_container: Arc<NetworkRechargeableContainer>,
-    prepared_orders_monitor: Arc<(Mutex<(bool, u32)>, Condvar)>,
+    prepared_orders_monitor: Arc<(Mutex<SecureCounter>, Condvar)>,
     dispenser_amount: u32,
-    power_monitor: Arc<(Mutex<PowerState>, Condvar)>,
+    power_monitor: Arc<(Mutex<SecurePowerState>, Condvar)>,
 }
 
 impl CoffeeMaker {
     pub fn new(configuration: CoffeeMakerConfiguration) -> Self {
-        let grain_container = Arc::new(ProviderContainer::new(configuration.grain_capacity, String::from("granos")));
-        let milk_container = Arc::new(ProviderContainer::new(configuration.milk_capacity, String::from("milk")));
+        let grain_container = Arc::new(ProviderContainer::new(
+            configuration.grain_capacity,
+            String::from("granos"),
+        ));
+        let milk_container = Arc::new(ProviderContainer::new(
+            configuration.milk_capacity,
+            String::from("milk"),
+        ));
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
             configuration.ground_coffee_capacity,
             String::from("cafe"),
@@ -92,8 +93,14 @@ impl CoffeeMaker {
             ContainerRechargerController::new(milk_container.clone()),
             FOAM_RECHARGING_RATE,
         ));
-        let cocoa_container = Arc::new(UnrechargeableContainer::new(configuration.cocoa_capacity, String::from("cacao")));
-        let water_container = Arc::new(NetworkRechargeableContainer::new(configuration.water_capacity, String::from("agua")));
+        let cocoa_container = Arc::new(UnrechargeableContainer::new(
+            configuration.cocoa_capacity,
+            String::from("cacao"),
+        ));
+        let water_container = Arc::new(NetworkRechargeableContainer::new(
+            configuration.water_capacity,
+            String::from("agua"),
+        ));
         Self {
             grain_container,
             milk_container,
@@ -101,10 +108,10 @@ impl CoffeeMaker {
             milk_foam_container,
             cocoa_container,
             water_container,
-            prepared_orders_monitor: Arc::new((Mutex::new((false, 0)), Condvar::new())),
+            prepared_orders_monitor: Arc::new((Mutex::new(SecureCounter { busy: false, amount: 0 }), Condvar::new())),
             dispenser_amount: configuration.dispenser_amount,
             power_monitor: Arc::new((
-                Mutex::new(PowerState {
+                Mutex::new(SecurePowerState {
                     busy: false,
                     on: true,
                 }),
@@ -151,17 +158,17 @@ impl CoffeeMaker {
     }
 
     fn is_turned_off(&self) -> bool {
-        let mut is_turned_off = true;
+        let mut is_on = false;
         if let Ok(guard) = self.power_monitor.0.lock() {
             if let Ok(mut power_state) = self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
                 power_state.busy = true;
-                is_turned_off = power_state.on;
+                is_on = power_state.on;
                 power_state.busy = false;
             }
             self.power_monitor.1.notify_all();
         }
-        is_turned_off
+        !is_on
     }
 
     pub fn turn_on(&self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
@@ -172,16 +179,16 @@ impl CoffeeMaker {
             self.water_container.clone(),
             &order_queue_monitor,
         );
-        self.turn_off();
 
         for d_handle in dispenser_handles {
             if let Ok(dispenser_number) = d_handle.join() {
                 println!("[dispenser {}] turned off", dispenser_number);
             }
         }
+        self.turn_off();
     }
 
-    pub fn get_containers_statistics(&self) -> (Vec<Statatistic>, u32, bool) {
+    pub fn get_containers_statistics(&self) -> (Vec<Statistic>, u32, bool) {
         let statistics_vec = vec![
             self.grain_container.get_statistics(),
             self.milk_container.get_statistics(),
@@ -201,17 +208,90 @@ impl CoffeeMaker {
         let mut amount = 0;
 
         if let Ok(guard) = self.prepared_orders_monitor.0.lock() {
-            if let Ok(mut prepared_orders_system) = self
+            if let Ok(mut secure_order_counter) = self
                 .prepared_orders_monitor
                 .1
-                .wait_while(guard, |state| state.0)
+                .wait_while(guard, |state| state.busy)
             {
-                prepared_orders_system.0 = true;
-                amount = prepared_orders_system.1;
-                prepared_orders_system.0 = false;
+                secure_order_counter.busy = true;
+                amount = secure_order_counter.amount;
+                secure_order_counter.busy = false;
             }
         }
         self.prepared_orders_monitor.1.notify_all();
         amount
+    }
+}
+
+#[cfg(test)]
+mod coffee_maker_test {
+    use crate::{coffee_maker_components::{container::MockContainer, coffee_maker::{CoffeeMaker}, configuration::CoffeeMakerConfiguration}, statistics_checker::statistic::Statistic};
+
+    #[test]
+    fn test01_when_getting_statistics_the_result_is_correct() {
+
+        let mut mock = MockContainer::new();
+        mock.expect_get_statistics()
+            .returning(|| Statistic{container: String::from(""), amount_consumed: 0, amount_left: 1});
+
+        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration{
+            grain_capacity: 1,
+            ground_coffee_capacity: 1,
+            milk_capacity: 1,
+            milk_foam_capacity: 1,
+            cocoa_capacity: 1,
+            water_capacity: 1,
+            dispenser_amount: 1,
+            coffee_ground_recharge_rate: 1,
+            milk_foam_recharge_rate: 1,
+            heated_water_recharge_rate: 1,});
+        
+        let statistics =  coffee_maker.get_containers_statistics();
+
+        for stat in statistics.0 {
+            assert_eq!(stat.amount_consumed, 0);
+            assert_eq!(stat.amount_left, 1);
+        }
+        
+        assert_eq!(statistics.1, 0);
+        assert_eq!(statistics.2, false);
+    }
+
+    #[test]
+    fn test02_when_asking_if_the_coffe_maker_just_instantiated_is_on_returns_true() {
+
+        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration{
+            grain_capacity: 1,
+            ground_coffee_capacity: 1,
+            milk_capacity: 1,
+            milk_foam_capacity: 1,
+            cocoa_capacity: 1,
+            water_capacity: 1,
+            dispenser_amount: 1,
+            coffee_ground_recharge_rate: 1,
+            milk_foam_recharge_rate: 1,
+            heated_water_recharge_rate: 1,});
+        
+        
+        assert_eq!(coffee_maker.is_turned_off(), false);
+    }
+
+    #[test]
+    fn test03_when_asking_if_the_coffe_maker_just_turned_off_is_on_returns_false() {
+
+        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration{
+            grain_capacity: 1,
+            ground_coffee_capacity: 1,
+            milk_capacity: 1,
+            milk_foam_capacity: 1,
+            cocoa_capacity: 1,
+            water_capacity: 1,
+            dispenser_amount: 1,
+            coffee_ground_recharge_rate: 1,
+            milk_foam_recharge_rate: 1,
+            heated_water_recharge_rate: 1,});
+        
+        coffee_maker.turn_off();
+        assert_eq!(coffee_maker.is_turned_off(), true);
     }
 }

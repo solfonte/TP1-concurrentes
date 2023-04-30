@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use crate::statistics_checker::statistic::Statatistic;
+use crate::statistics_checker::statistic::Statistic;
 
 use super::container::Container;
 const NETWORK_LOADING_RATE: u64 = 2; // 2 units per second
@@ -24,7 +24,7 @@ pub struct NetworkRechargeableContainer {
 }
 
 impl Container for NetworkRechargeableContainer {
-    fn extract(&self, extraction: u32) -> Result<u32, &str> {
+    fn extract(&self, extraction: u32) -> Result<u32, String> {
         let mut result = Ok(extraction);
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
@@ -51,7 +51,7 @@ impl Container for NetworkRechargeableContainer {
         result
     }
 
-    fn get_statistics(&self) -> Statatistic {
+    fn get_statistics(&self) -> Statistic {
         let mut amount_left = 0;
         let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
@@ -62,8 +62,8 @@ impl Container for NetworkRechargeableContainer {
                 system.busy = false;
             }
         }
-        //TODO: change name to enum
-        Statatistic {
+
+        Statistic {
             amount_left,
             amount_consumed,
             container: String::from(&self.name),

@@ -35,7 +35,7 @@ mod file_reader_test {
 
     #[test]
     fn test01_when_opening_a_file_with_one_order_should_return_ok() {
-        let file_reader = FileReader::new(String::from("src/test_order_files/one_order.json"));
+        let file_reader = FileReader::new(String::from("files/test_order_files/one_order.json"));
         let result = file_reader.read();
 
         assert!(result.is_ok());
@@ -44,7 +44,7 @@ mod file_reader_test {
     #[test]
     fn test02_when_opening_a_non_existing_file_should_return_only_error() {
         let file_reader =
-            FileReader::new(String::from("src/test_order_files/non_existing_file.json"));
+            FileReader::new(String::from("files/test_order_files/non_existing_file.json"));
         let result = file_reader.read();
 
         assert!(result.is_err());

@@ -13,7 +13,7 @@ impl ContainerRechargerController {
         }
     }
 
-    pub fn recharge(&self, amount_to_extract: u32) -> Result<u32, &str> {
+    pub fn recharge(&self, amount_to_extract: u32) -> Result<u32, String> {
         self.recharger_container.extract(amount_to_extract)
     }
 }

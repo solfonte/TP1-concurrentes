@@ -1,6 +1,6 @@
 use std::sync::{Arc, Condvar, Mutex};
 
-use crate::statistics_checker::statistic::Statatistic;
+use crate::statistics_checker::statistic::Statistic;
 
 use super::container::Container;
 #[derive(Debug)]
@@ -18,8 +18,8 @@ pub struct UnrechargeableContainer {
 }
 
 impl Container for UnrechargeableContainer {
-    fn extract(&self, extraction: u32) -> Result<u32, &str> {
-        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
+    fn extract(&self, extraction: u32) -> Result<u32, String> {
+        let mut result: Result<u32, String> = Err(String::from("No se pudo extraer del contenedor"));
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self
                 .pair
@@ -43,7 +43,7 @@ impl Container for UnrechargeableContainer {
         result
     }
 
-    fn get_statistics(&self) -> Statatistic {
+    fn get_statistics(&self) -> Statistic {
         let mut amount_left = 0;
         let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
@@ -54,7 +54,7 @@ impl Container for UnrechargeableContainer {
                 system.busy = false;
             }
         }
-        Statatistic {
+        Statistic {
             amount_left,
             amount_consumed,
             container: String::from(&self.name),

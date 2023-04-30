@@ -1,6 +1,6 @@
 use std::sync::{Arc, Condvar, Mutex};
 
-use crate::statistics_checker::statistic::Statatistic;
+use crate::statistics_checker::statistic::Statistic;
 
 use super::container::Container;
 
@@ -19,8 +19,8 @@ pub struct ProviderContainer {
 }
 
 impl Container for ProviderContainer {
-    fn extract(&self, extraction: u32) -> Result<u32, &str> {
-        let mut result: Result<u32, &str> = Err("No se pudo extraer del contenedor");
+    fn extract(&self, extraction: u32) -> Result<u32, String> {
+        let mut result: Result<u32, String> = Err(String::from("No se pudo extraer del contenedor"));
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self
                 .pair
@@ -34,7 +34,7 @@ impl Container for ProviderContainer {
         result
     }
 
-    fn get_statistics(&self) -> Statatistic {
+    fn get_statistics(&self) -> Statistic {
         let mut amount_left = 0;
         let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
@@ -45,7 +45,7 @@ impl Container for ProviderContainer {
                 system.busy = false;
             }
         }
-        Statatistic {
+        Statistic {
             amount_left,
             amount_consumed,
             container: String::from(&self.name),
@@ -69,7 +69,7 @@ impl ProviderContainer {
         }
     }
 
-    pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, &str> {
+    pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, String> {
         let result;
 
         system.busy = true;

@@ -1,7 +1,7 @@
 use super::{
     network_rechargeable_container::NetworkRechargeableContainer,
     rechargeable_container::RechargeableContainer,
-    unrechargeable_container::UnrechargeableContainer,
+    unrechargeable_container::UnrechargeableContainer, configuration::SecureCounter,
 };
 use crate::{
     coffee_maker_components::container::Container,
@@ -38,14 +38,14 @@ impl Dispenser {
         }
     }
 
-    pub fn add_prepared_order(&self, prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>) {
+    pub fn add_prepared_order(&self, prepared_orders_monitor: &Arc<(Mutex<SecureCounter>, Condvar)>) {
         if let Ok(guard) = prepared_orders_monitor.0.lock() {
-            if let Ok(mut order_system) =
-                prepared_orders_monitor.1.wait_while(guard, |state| state.0)
+            if let Ok(mut secured_order_counter) =
+                prepared_orders_monitor.1.wait_while(guard, |state| state.busy)
             {
-                order_system.0 = true;
-                order_system.1 += 1;
-                order_system.0 = false;
+                secured_order_counter.busy = true;
+                secured_order_counter.amount += 1;
+                secured_order_counter.busy = false;
             }
         }
         prepared_orders_monitor.1.notify_all();
@@ -138,12 +138,11 @@ impl Dispenser {
 
         if let Ok(guard) = order_queue_monitor.0.lock() {
             if let Ok(mut order_system) = order_queue_monitor.1.wait_while(guard, |state| {
-                state.is_busy() && state.queue_is_empty() && !state.finished_queueing()
+                state.is_busy() || (state.queue_is_empty() && !state.finished_queueing())
             }) {
                 order_system.set_busy(true);
                 if !order_system.there_are_orders_left() {
                     result = None;
-                    println!("no hay mas ordenes");
                 } else if let Some(_order) = order_system.get_order() {
                     order = _order;
                     result = Some(order);
@@ -162,7 +161,7 @@ impl Dispenser {
         water_container: &NetworkRechargeableContainer,
         cocoa_container: &UnrechargeableContainer,
         order_queue_monitor: &Arc<(Mutex<OrderSystem>, Condvar)>,
-        prepared_orders_monitor: &Arc<(Mutex<(bool, u32)>, Condvar)>,
+        prepared_orders_monitor: &Arc<(Mutex<SecureCounter>, Condvar)>,
     ) -> Result<bool, String> {
         if let Some(order) = self.take_order_from_queue(order_queue_monitor) {
             let result = self.prepare_order(
@@ -344,7 +343,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -382,7 +387,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -420,7 +431,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -459,7 +476,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -498,7 +521,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -538,7 +567,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -578,7 +613,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -616,7 +657,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount: 0, cocoa_amount, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount: 0,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -655,7 +702,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount: 0, milk_foam_amount, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount: 0,
+                milk_foam_amount,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -694,7 +747,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount: 0, water_amount},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount: 0,
+                water_amount,
+            },
             &coffee_container,
             &foam_container,
             &water_container,
@@ -733,7 +792,13 @@ mod dispenser_test {
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
-            Order{order_number: 1, coffee_amount, cocoa_amount, milk_foam_amount, water_amount: 0},
+            Order {
+                order_number: 1,
+                coffee_amount,
+                cocoa_amount,
+                milk_foam_amount,
+                water_amount: 0,
+            },
             &coffee_container,
             &foam_container,
             &water_container,

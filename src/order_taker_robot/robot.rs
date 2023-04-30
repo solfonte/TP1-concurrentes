@@ -18,7 +18,6 @@ impl Robot {
         match self.file_reader.read() {
             Ok(orders_string) => {
                 let stream = serde_json::from_str::<Vec<Order>>(&orders_string);
-                println!("reading orderrs");
                 match stream {
                     Ok(order_queue) => Ok(order_queue),
                     Err(msg) => Err(msg.to_string()),
@@ -73,8 +72,7 @@ mod robot_test {
 
     #[test]
     fn test01_when_taking_only_one_order_the_result_is_a_vector_with_one_order() {
-        let mut robot = Robot::new(String::from("src/test_order_files/one_order.json"));
-        //let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
+        let mut robot = Robot::new(String::from("files/test_order_files/one_order.json"));
         let result = robot.read_orders();
 
         assert!(result.is_ok());
@@ -91,7 +89,7 @@ mod robot_test {
 
     #[test]
     fn test02_when_taking_two_orders_the_result_is_a_vector_with_two_orders() {
-        let mut robot = Robot::new(String::from("src/test_order_files/two_orders.json"));
+        let mut robot = Robot::new(String::from("files/test_order_files/two_orders.json"));
         let result = robot.read_orders();
 
         assert!(result.is_ok());
@@ -114,7 +112,7 @@ mod robot_test {
 
     #[test]
     fn test03_when_taking_only_one_order_the_order_is_correctly_queued() {
-        let robot = Robot::new(String::from("src/test_order_files/one_order.json"));
+        let robot = Robot::new(String::from("files/test_order_files/one_order.json"));
         let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
         let order_vector = vec![Order {
             order_number: 0,
@@ -151,7 +149,7 @@ mod robot_test {
 
     #[test]
     fn test04_when_taking_only_two_orders_the_orders_are_correctly_queued() {
-        let robot = Robot::new(String::from("src/test_order_files/fake.json"));
+        let robot = Robot::new(String::from("files/test_order_files/fake.json"));
         let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
         let order_vector = vec![
             Order {
@@ -210,7 +208,7 @@ mod robot_test {
 
     #[test]
     fn test06_when_taking_only_one_order_the_order_is_correctly_taken() {
-        let mut robot = Robot::new(String::from("src/test_order_files/one_order.json"));
+        let mut robot = Robot::new(String::from("files/test_order_files/one_order.json"));
         let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
 
         let result = robot.take_orders(&orders_monitor_pair);
@@ -242,7 +240,7 @@ mod robot_test {
 
     #[test]
     fn test07_when_taking_two_orders_the_orders_are_correctly_taken() {
-        let mut robot = Robot::new(String::from("src/test_order_files/two_orders.json"));
+        let mut robot = Robot::new(String::from("files/test_order_files/two_orders.json"));
         let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
 
         let result = robot.take_orders(&orders_monitor_pair);
@@ -287,7 +285,7 @@ mod robot_test {
 
     #[test]
     fn test08_when_the_file_does_not_exist_the_robot_returns_the_correct_error() {
-        let mut robot = Robot::new(String::from("src/test_order_files/fake.json"));
+        let mut robot = Robot::new(String::from("files/test_order_files/fake.json"));
         let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
 
         let result = robot.take_orders(&orders_monitor_pair);

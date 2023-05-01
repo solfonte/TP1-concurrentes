@@ -4,33 +4,24 @@ use crate::statistics_checker::statistic::Statistic;
 
 use super::{
     container::Container, container_rechargeable_controller::ContainerRechargerController,
+    container_system::ContainerSystem,
 };
 
-#[derive(Debug)]
-pub struct System {
-    max_capacity: u32,
-    amount: u32,
-    amount_consumed: u32,
-    busy: bool,
-    is_on: bool,
-}
-
 pub struct RechargeableContainer {
-    pair: Arc<(Mutex<System>, Condvar)>,
+    pair: Arc<(Mutex<ContainerSystem>, Condvar)>,
+    max_capacity: u32,
     name: String,
+    amount_percentage_alert: f32,
     recharger_controller: ContainerRechargerController,
     recharging_rate: u32,
 }
 
 impl Container for RechargeableContainer {
     fn extract(&self, extraction: u32) -> Result<u32, String> {
-        let mut result: Result<u32, String> = Err(String::from("No se pudo extraer del contenedor"));
+        let mut result: Result<u32, String> =
+            Err(String::from("No se pudo extraer del contenedor"));
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self
-                .pair
-                .1
-                .wait_while(guard, |state| state.busy && state.is_on)
-            {
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.is_busy()) {
                 result = self.extract_amount(&mut system, extraction);
             }
         }
@@ -42,11 +33,11 @@ impl Container for RechargeableContainer {
         let mut amount_left = 0;
         let mut amount_consumed = 0;
         if let Ok(guard) = self.pair.0.lock() {
-            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.busy) {
-                system.busy = true;
-                amount_left = system.amount;
-                amount_consumed = system.amount_consumed;
-                system.busy = false;
+            if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.is_busy()) {
+                system.set_busy(true);
+                amount_left = system.get_amount_left();
+                amount_consumed = system.get_amount_consumed();
+                system.set_busy(false);
             }
         }
         Statistic {
@@ -61,47 +52,58 @@ impl RechargeableContainer {
     pub fn new(
         max_capacity: u32,
         name: String,
+        amount_percentage_alert: f32,
         recharger_controller: ContainerRechargerController,
         recharging_rate: u32,
     ) -> Self {
         Self {
             pair: Arc::new((
-                Mutex::new(System {
-                    max_capacity,
-                    amount: max_capacity,
-                    amount_consumed: 0,
-                    busy: false,
-                    is_on: true,
-                }),
+                Mutex::new(ContainerSystem::new(max_capacity)),
                 Condvar::new(),
             )),
+            amount_percentage_alert,
+            max_capacity,
             name,
             recharger_controller,
             recharging_rate,
         }
     }
 
-    pub fn extract_amount(&self, system: &mut System, extraction: u32) -> Result<u32, String> {
-        system.busy = true;
+    pub fn extract_amount(
+        &self,
+        system: &mut ContainerSystem,
+        extraction: u32,
+    ) -> Result<u32, String> {
+        system.set_busy(true);
 
-        if system.amount < extraction {
-            let amount_to_recharge = (system.max_capacity - system.amount) / self.recharging_rate;
+        let amount_left = system.get_amount_left();
+        if amount_left < extraction {
+            let amount_to_recharge = (self.max_capacity - amount_left) / self.recharging_rate;
             let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
             if let Ok(amount_returned) = recharging_result {
-                println!("[CONTAINER COULD RECHARGE!]");
-                system.amount += amount_returned * self.recharging_rate;
+                system.recharge(amount_returned * self.recharging_rate);
+                system.set_already_alerted_amount_percentage(false);
             }
         }
-
-        let result = if system.amount >= extraction {
-            system.amount -= extraction;
-            system.amount_consumed += extraction;
+        let amount_left = system.get_amount_left();
+        let result = if amount_left >= extraction {
+            system.extract(extraction);
+            system.increase_amount_consumed(extraction);
             Ok(extraction)
         } else {
             Ok(0)
         };
 
-        system.busy = false;
+        if !system.already_alerted_amount_percentage() && self.check_alert_on_amount_left_percentage(
+            &self.name,
+            system.get_amount_left(),
+            self.max_capacity,
+            self.amount_percentage_alert,
+        ){
+            system.set_already_alerted_amount_percentage(true);
+        }
+
+        system.set_busy(false);
         result
     }
 }
@@ -118,11 +120,12 @@ mod rechargeable_container_test {
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -134,11 +137,12 @@ mod rechargeable_container_test {
     fn test02_when_there_are_two_units_available_then_extracting_one_is_possible_the_extraction_equals_one(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -150,11 +154,12 @@ mod rechargeable_container_test {
     fn test03_when_there_are_two_units_available_then_extracting_two_is_possible_the_extraction_equals_two(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -166,11 +171,12 @@ mod rechargeable_container_test {
     fn test04_when_there_are_two_units_available_and_no_recharging_resource_available_then_extracting_three_is_not_possible_the_extraction_equals_cero(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -182,11 +188,12 @@ mod rechargeable_container_test {
     fn test05_when_there_are_two_units_available_and_max_capacity_is_two_and_three_recharging_units_available_then_extracting_five_is_not_possible_the_extraction_equals_cero(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(3, String::from("Provider")),
+            ProviderContainer::new(3, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -198,11 +205,12 @@ mod rechargeable_container_test {
     fn test06_when_there_are_two_units_available_and_max_capacity_is_five_and_three_recharging_units_available_then_extracting_five_is_possible_the_extraction_equals_five(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(3, String::from("Provider")),
+            ProviderContainer::new(3, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             5,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -215,11 +223,12 @@ mod rechargeable_container_test {
     fn test07_when_there_are_two_units_available_then_extracting_cero_leaves_an_amount_of_two_units_left_available(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -232,11 +241,12 @@ mod rechargeable_container_test {
     fn test08_when_there_are_two_units_available_then_extracting_one_leaves_an_amount_of_one_unit_left_available(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -249,11 +259,12 @@ mod rechargeable_container_test {
     fn test09_when_there_are_two_units_available_then_extracting_two_leaves_an_amount_of_cero_units_left_available(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -266,11 +277,12 @@ mod rechargeable_container_test {
     fn test10_when_there_are_two_units_available_and_no_recharging_resource_available_then_extracting_three_leaves_an_amount_of_two_units_left_available(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(0, String::from("Provider")),
+            ProviderContainer::new(0, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -283,11 +295,12 @@ mod rechargeable_container_test {
     fn test11_when_there_are_two_units_available_and_max_capacity_is_two_and_three_recharging_units_available_then_extracting_five_leaves_an_amount_of_two_units_left_available(
     ) {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(3, String::from("Provider")),
+            ProviderContainer::new(3, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );
@@ -300,11 +313,12 @@ mod rechargeable_container_test {
     fn test12_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two()
     {
         let container_recharger_controller = ContainerRechargerController::new(Arc::new(
-            ProviderContainer::new(3, String::from("Provider")),
+            ProviderContainer::new(3, 0.2, String::from("Provider")),
         ));
         let container = RechargeableContainer::new(
             2,
             String::from("Rechargeable container"),
+            0.2,
             container_recharger_controller,
             1,
         );

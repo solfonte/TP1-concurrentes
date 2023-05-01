@@ -1,7 +1,7 @@
 use super::{
-    network_rechargeable_container::NetworkRechargeableContainer,
+    configuration::SecureCounter, network_rechargeable_container::NetworkRechargeableContainer,
     rechargeable_container::RechargeableContainer,
-    unrechargeable_container::UnrechargeableContainer, configuration::SecureCounter,
+    unrechargeable_container::UnrechargeableContainer,
 };
 use crate::{
     coffee_maker_components::container::Container,
@@ -38,10 +38,14 @@ impl Dispenser {
         }
     }
 
-    pub fn add_prepared_order(&self, prepared_orders_monitor: &Arc<(Mutex<SecureCounter>, Condvar)>) {
+    pub fn add_prepared_order(
+        &self,
+        prepared_orders_monitor: &Arc<(Mutex<SecureCounter>, Condvar)>,
+    ) {
         if let Ok(guard) = prepared_orders_monitor.0.lock() {
-            if let Ok(mut secured_order_counter) =
-                prepared_orders_monitor.1.wait_while(guard, |state| state.busy)
+            if let Ok(mut secured_order_counter) = prepared_orders_monitor
+                .1
+                .wait_while(guard, |state| state.busy)
             {
                 secured_order_counter.busy = true;
                 secured_order_counter.amount += 1;
@@ -207,7 +211,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = UnrechargeableContainer::new(10, String::from("container"));
+        let container = UnrechargeableContainer::new(10, 0.2, String::from("container"));
         let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -223,8 +227,10 @@ mod dispenser_test {
         let container = RechargeableContainer::new(
             10,
             String::from("container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(ProviderContainer::new(
                 0,
+                0.2,
                 String::from("provider"),
             ))),
             1,
@@ -241,7 +247,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = NetworkRechargeableContainer::new(10, String::from("container"));
+        let container = NetworkRechargeableContainer::new(10, 0.2, String::from("container"));
         let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -254,7 +260,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = UnrechargeableContainer::new(5, String::from("container"));
+        let container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
         let dispenser = Dispenser::new();
         let _ = container.extract(4);
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -270,8 +276,10 @@ mod dispenser_test {
         let container = RechargeableContainer::new(
             5,
             String::from("container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(ProviderContainer::new(
                 0,
+                0.2,
                 String::from("provider"),
             ))),
             1,
@@ -287,7 +295,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let dispenser = Dispenser::new();
         let _ = container.extract(4);
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -303,8 +311,10 @@ mod dispenser_test {
         let container = RechargeableContainer::new(
             5,
             String::from("container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(ProviderContainer::new(
                 5,
+                0.2,
                 String::from("provider"),
             ))),
             1,
@@ -323,23 +333,25 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -366,24 +378,26 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = cocoa_container.extract(5);
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -410,24 +424,26 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(0, String::from("grain container"));
+        let grain_container = ProviderContainer::new(0, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
         let _ = coffee_container.extract(5);
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -454,25 +470,27 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(0, String::from("milk container"));
+        let milk_container = ProviderContainer::new(0, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
         let _ = foam_container.extract(5);
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -499,24 +517,26 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -544,25 +564,27 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
         let _ = coffee_container.extract(4);
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -590,25 +612,27 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
         let _ = foam_container.extract(4);
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -635,24 +659,26 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -680,24 +706,26 @@ mod dispenser_test {
         let milk_foam_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -725,24 +753,26 @@ mod dispenser_test {
         let cocoa_amount = 3;
         let water_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -770,24 +800,26 @@ mod dispenser_test {
         let cocoa_amount = 3;
         let milk_foam_amount = 3;
 
-        let grain_container = ProviderContainer::new(10, String::from("grain container"));
+        let grain_container = ProviderContainer::new(10, 0.2, String::from("grain container"));
         let coffee_container = RechargeableContainer::new(
             5,
             String::from("coffee container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(grain_container)),
             1,
         );
 
-        let milk_container = ProviderContainer::new(10, String::from("milk container"));
+        let milk_container = ProviderContainer::new(10, 0.2, String::from("milk container"));
         let foam_container = RechargeableContainer::new(
             5,
             String::from("foam container"),
+            0.2,
             ContainerRechargerController::new(Arc::new(milk_container)),
             1,
         );
 
-        let cocoa_container = UnrechargeableContainer::new(5, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, String::from("container"));
+        let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();

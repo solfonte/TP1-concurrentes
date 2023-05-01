@@ -13,7 +13,7 @@ pub struct CoffeeMakerConfiguration {
     pub coffee_ground_recharge_rate: u32,
     pub milk_foam_recharge_rate: u32,
     pub heated_water_recharge_rate: u32,
-    pub amount_percentage_alert: f32
+    pub amount_percentage_alert: f32,
 }
 
 pub struct SecurePowerState {
@@ -23,7 +23,7 @@ pub struct SecurePowerState {
 
 pub struct SecureCounter {
     pub busy: bool,
-    pub amount: u32
+    pub amount: u32,
 }
 
 pub struct ConfigurationReader {
@@ -54,11 +54,12 @@ impl ConfigurationReader {
 #[cfg(test)]
 mod test_configuration_reader {
     use crate::coffee_maker_components::configuration::ConfigurationReader;
-    
+
     #[test]
     fn test01_when_taking_only_one_order_the_result_is_a_vector_with_one_order() {
-        
-        let configuration_reader = ConfigurationReader::new(String::from("files/test_configuration_files/test_configurations.json"));
+        let configuration_reader = ConfigurationReader::new(String::from(
+            "files/test_configuration_files/test_configurations.json",
+        ));
         let result = configuration_reader.read_configuration();
 
         assert!(result.is_ok());

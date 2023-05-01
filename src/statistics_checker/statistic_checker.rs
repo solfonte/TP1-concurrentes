@@ -8,7 +8,7 @@ pub struct StatisticsChecker {
 
 impl StatisticsChecker {
     pub fn print_statistics(&self) -> bool {
-        let statistics = self.coffee_maker.get_containers_statistics();
+        let statistics = self.coffee_maker.get_statistics();
 
         for stat in statistics.0 {
             println!(
@@ -21,6 +21,8 @@ impl StatisticsChecker {
 
         if !statistics.2 {
             println!("Coffee machine is off");
+        } else {
+            println!("esta on");
         }
 
         statistics.2

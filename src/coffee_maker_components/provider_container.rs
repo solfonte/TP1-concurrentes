@@ -180,16 +180,3 @@ mod provider_container_test {
         assert_eq!(statistic.amount_left, 2)
     }
 }
-
-/*
-Condiciones:
-    - si me alcanza -> saco
-    - No me alcanza -> pido
-                            -> puede recargar igual o menos de lo pedido -> recargo -> devuelvo Ok(extraccion)
-                            -> no puede recargar -> devuelvo Ok(0)
-
-
-
-
-1 gr de grain - 10 gr de cafe molido
-*/

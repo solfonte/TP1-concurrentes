@@ -311,5 +311,4 @@ mod rechargeable_container_test {
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2);
     }
-    //TODO: tests de los casos de recarga
 }

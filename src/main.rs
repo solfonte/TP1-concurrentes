@@ -77,7 +77,7 @@ fn main() {
         let mut continue_printing_statistics = true;
 
         while continue_printing_statistics {
-            thread::sleep(Duration::from_millis(3));
+            thread::sleep(Duration::from_millis(1000));
             continue_printing_statistics = statistics_checker.print_statistics();
             //TODO:El sistema debe alertar por consola cuando los contenedores de granos, leche y cacao se encuentran por debajo de X% de capacidad.
         }
@@ -86,7 +86,6 @@ fn main() {
     let order_preparation_handle = thread::spawn(move || {
         let orders_monitor_pair_clone_robot = orders_monitor_pair.clone();
 
-        //TODO: Poner en el informe que en un principio pense en hacer de a una y despues cambie y los motivos
         match robot.take_orders(&orders_monitor_pair_clone_robot) {
             Ok(_) => {}
             Err(error_msg) => {

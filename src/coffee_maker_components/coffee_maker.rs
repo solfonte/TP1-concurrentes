@@ -12,9 +12,6 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-const COFFEE_RECHARGING_RATE: u32 = 10;
-const FOAM_RECHARGING_RATE: u32 = 5;
-
 use super::{
     configuration::{CoffeeMakerConfiguration, SecureCounter, SecurePowerState}, container::Container,
     container_rechargeable_controller::ContainerRechargerController,
@@ -47,11 +44,8 @@ fn start_dispenser(
                 &order_queue_monitor,
                 &prepared_orders_monitor_clone,
             ) {
-                println!("termino de procesar el dispenser");
                 finish_processing_orders = finished_processing;
             } else {
-                //TODO: revisar posible race condition
-                println!("CORTA PORQUE HUBO ERROR");
                 finish_processing_orders = true
             }
         }
@@ -79,27 +73,28 @@ impl CoffeeMaker {
         ));
         let milk_container = Arc::new(ProviderContainer::new(
             configuration.milk_capacity,
-            String::from("milk"),
+            String::from("Milk container"),
+
         ));
         let ground_coffee_container = Arc::new(RechargeableContainer::new(
             configuration.ground_coffee_capacity,
-            String::from("cafe"),
+            String::from("Ground coffee container"),
             ContainerRechargerController::new(grain_container.clone()),
-            COFFEE_RECHARGING_RATE,
+            configuration.coffee_ground_recharge_rate,
         ));
         let milk_foam_container = Arc::new(RechargeableContainer::new(
             configuration.milk_foam_capacity,
-            String::from("espuma"),
+            String::from("Milk foam container"),
             ContainerRechargerController::new(milk_container.clone()),
-            FOAM_RECHARGING_RATE,
+            configuration.milk_foam_recharge_rate,
         ));
         let cocoa_container = Arc::new(UnrechargeableContainer::new(
             configuration.cocoa_capacity,
-            String::from("cacao"),
+            String::from("Cocoa container"),
         ));
         let water_container = Arc::new(NetworkRechargeableContainer::new(
             configuration.water_capacity,
-            String::from("agua"),
+            String::from("Water container"),
         ));
         Self {
             grain_container,
@@ -157,8 +152,8 @@ impl CoffeeMaker {
         }
     }
 
-    fn is_turned_off(&self) -> bool {
-        let mut is_on = false;
+    fn is_turned_on(&self) -> bool {
+        let mut is_on = true;
         if let Ok(guard) = self.power_monitor.0.lock() {
             if let Ok(mut power_state) = self.power_monitor.1.wait_while(guard, |state| state.busy)
             {
@@ -168,7 +163,7 @@ impl CoffeeMaker {
             }
             self.power_monitor.1.notify_all();
         }
-        !is_on
+        is_on
     }
 
     pub fn turn_on(&self, order_queue_monitor: Arc<(Mutex<OrderSystem>, Condvar)>) {
@@ -188,7 +183,7 @@ impl CoffeeMaker {
         self.turn_off();
     }
 
-    pub fn get_containers_statistics(&self) -> (Vec<Statistic>, u32, bool) {
+    pub fn get_statistics(&self) -> (Vec<Statistic>, u32, bool) {
         let statistics_vec = vec![
             self.grain_container.get_statistics(),
             self.milk_container.get_statistics(),
@@ -199,9 +194,9 @@ impl CoffeeMaker {
         ];
         let amount_drinks_prepared = self.get_amount_drinks_prepared();
 
-        let is_turned_off = self.is_turned_off();
+        let is_turned_on = self.is_turned_on();
 
-        (statistics_vec, amount_drinks_prepared, is_turned_off)
+        (statistics_vec, amount_drinks_prepared, is_turned_on)
     }
 
     pub fn get_amount_drinks_prepared(&self) -> u32 {
@@ -244,9 +239,11 @@ mod coffee_maker_test {
             dispenser_amount: 1,
             coffee_ground_recharge_rate: 1,
             milk_foam_recharge_rate: 1,
-            heated_water_recharge_rate: 1,});
+            heated_water_recharge_rate: 1,
+            amount_percentage_alert: 0.2,
+        });
         
-        let statistics =  coffee_maker.get_containers_statistics();
+        let statistics =  coffee_maker.get_statistics();
 
         for stat in statistics.0 {
             assert_eq!(stat.amount_consumed, 0);
@@ -254,7 +251,7 @@ mod coffee_maker_test {
         }
         
         assert_eq!(statistics.1, 0);
-        assert_eq!(statistics.2, false);
+        assert_eq!(statistics.2, true);
     }
 
     #[test]
@@ -270,10 +267,12 @@ mod coffee_maker_test {
             dispenser_amount: 1,
             coffee_ground_recharge_rate: 1,
             milk_foam_recharge_rate: 1,
-            heated_water_recharge_rate: 1,});
+            heated_water_recharge_rate: 1,
+            amount_percentage_alert: 0.2,
+        });
         
         
-        assert_eq!(coffee_maker.is_turned_off(), false);
+        assert_eq!(coffee_maker.is_turned_on(), true);
     }
 
     #[test]
@@ -289,9 +288,15 @@ mod coffee_maker_test {
             dispenser_amount: 1,
             coffee_ground_recharge_rate: 1,
             milk_foam_recharge_rate: 1,
-            heated_water_recharge_rate: 1,});
+            heated_water_recharge_rate: 1,
+            amount_percentage_alert: 0.2,
+        });
         
         coffee_maker.turn_off();
-        assert_eq!(coffee_maker.is_turned_off(), true);
+        assert_eq!(coffee_maker.is_turned_on(), false);
     }
 }
+
+
+
+

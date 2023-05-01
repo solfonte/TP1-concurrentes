@@ -8,5 +8,6 @@
     "dispenser_amount": 10,
     "coffee_ground_recharge_rate": 2,
     "milk_foam_recharge_rate": 2,
-    "heated_water_recharge_rate": 2
+    "heated_water_recharge_rate": 2,
+    "amount_percentage_alert": 0.2
 }

@@ -80,7 +80,6 @@ impl UnrechargeableContainer {
 }
 
 #[cfg(test)]
-//TODO: arreglar el tema de los use crate:: .....
 mod unrechargeable_container_test {
     use crate::coffee_maker_components::container::Container;
     use crate::coffee_maker_components::unrechargeable_container::UnrechargeableContainer;

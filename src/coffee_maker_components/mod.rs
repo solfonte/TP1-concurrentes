@@ -1,4 +1,4 @@
-pub mod coffee_maker;
+pub mod coffee_machine;
 pub mod configuration;
 pub mod container;
 pub mod container_rechargeable_controller;

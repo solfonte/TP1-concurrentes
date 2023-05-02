@@ -7,13 +7,14 @@ use std::{
 use crate::statistics_checker::statistic::Statistic;
 
 use super::{container::Container, container_system::ContainerSystem};
-const NETWORK_LOADING_RATE: u64 = 2; // 2 units per second
 
+///comment de la estructura
 pub struct NetworkRechargeableContainer {
     max_capacity: u32,
     amount_percentage_alert: f32,
     pair: Arc<(Mutex<ContainerSystem>, Condvar)>,
     name: String,
+    heated_water_recharge_rate: u32,
 }
 
 impl Container for NetworkRechargeableContainer {
@@ -49,12 +50,18 @@ impl Container for NetworkRechargeableContainer {
 }
 
 impl NetworkRechargeableContainer {
-    pub fn new(max_capacity: u32, amount_percentage_alert: f32, name: String) -> Self {
+    pub fn new(
+        max_capacity: u32,
+        amount_percentage_alert: f32,
+        heated_water_recharge_rate: u32,
+        name: String,
+    ) -> Self {
         Self {
             pair: Arc::new((
                 Mutex::new(ContainerSystem::new(max_capacity)),
                 Condvar::new(),
             )),
+            heated_water_recharge_rate,
             amount_percentage_alert,
             max_capacity,
             name,
@@ -63,7 +70,7 @@ impl NetworkRechargeableContainer {
 
     fn recharge_from_network(&self, max_capacity: u32, amount_to_recharge: u32) -> u32 {
         thread::sleep(Duration::from_millis(
-            (amount_to_recharge as u64) / NETWORK_LOADING_RATE,
+            (amount_to_recharge / self.heated_water_recharge_rate) as u64,
         ));
         max_capacity
     }
@@ -80,7 +87,6 @@ impl NetworkRechargeableContainer {
 
             system.recharge(self.max_capacity - amount_left);
             system.set_already_alerted_amount_percentage(false);
-
         }
 
         let result: Result<u32, String> = if system.get_amount_left() >= extraction {
@@ -91,12 +97,14 @@ impl NetworkRechargeableContainer {
             Ok(0)
         };
 
-        if !system.already_alerted_amount_percentage() && self.check_alert_on_amount_left_percentage(
-            &self.name,
-            system.get_amount_left(),
-            self.max_capacity,
-            self.amount_percentage_alert,
-        ) {
+        if !system.already_alerted_amount_percentage()
+            && self.check_alert_on_amount_left_percentage(
+                &self.name,
+                system.get_amount_left(),
+                self.max_capacity,
+                self.amount_percentage_alert,
+            )
+        {
             system.set_already_alerted_amount_percentage(true);
         }
 
@@ -114,7 +122,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test01_when_there_are_two_units_available_then_extracting_cero_is_possible_the_extraction_equals_cero(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let extraction = container.extract(0);
 
         assert_eq!(extraction, Ok(0))
@@ -123,7 +131,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test02_when_there_are_two_units_available_then_extracting_one_is_possible_the_extraction_equals_one(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let extraction = container.extract(1);
 
         assert_eq!(extraction, Ok(1))
@@ -132,7 +140,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test03_when_there_are_two_units_available_then_extracting_two_is_possible_the_extraction_equals_two(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let extraction = container.extract(2);
 
         assert_eq!(extraction, Ok(2))
@@ -141,7 +149,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test04_when_there_are_two_units_available_then_extracting_three_is_not_possible_the_extraction_equals_cero(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let extraction = container.extract(3);
 
         assert_eq!(extraction, Ok(0))
@@ -150,7 +158,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test05_when_there_are_two_units_available_then_extracting_cero_leaves_two_units_left_available(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let _ = container.extract(0);
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2)
@@ -159,7 +167,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test06_when_there_are_two_units_available_then_extracting_one_leaves_one_unit_left_available(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let _ = container.extract(1);
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 1)
@@ -168,7 +176,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test07_when_there_are_two_units_available_then_extracting_two_leaves_cero_units_left_available(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let _ = container.extract(2);
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 0)
@@ -177,7 +185,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test08_when_there_are_two_units_available_and_max_capacity_is_two_then_extracting_three_is_not_possible_extraction_equals_two(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let extraction = container.extract(3);
         assert_eq!(extraction, Ok(0));
     }
@@ -185,7 +193,7 @@ mod network_rechargeable_container_test {
     #[test]
     fn test09_when_there_are_two_units_available_and_max_capacity_is_two_then_extracting_three_leaves_an_amount_of_two_units_left_available(
     ) {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Container"));
         let _ = container.extract(3);
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2);
@@ -194,14 +202,14 @@ mod network_rechargeable_container_test {
     #[test]
     fn test10_when_the_container_is_created_with_max_capacity_of_two_units_the_left_amount_is_two()
     {
-        let container = NetworkRechargeableContainer::new(2, 0.2, String::from("Provider"));
+        let container = NetworkRechargeableContainer::new(2, 0.2, 2, String::from("Provider"));
         let statistic = container.get_statistics();
         assert_eq!(statistic.amount_left, 2);
     }
     #[test]
     fn test11_when_there_are_two_units_available_and_max_capacity_is_five_then_extracting_three_is_possible_extraction_equals_three(
     ) {
-        let container = NetworkRechargeableContainer::new(5, 0.2, String::from("Container"));
+        let container = NetworkRechargeableContainer::new(5, 0.2, 2, String::from("Container"));
         let _ = container.extract(3);
         let extraction = container.extract(3);
         let statistic = container.get_statistics();

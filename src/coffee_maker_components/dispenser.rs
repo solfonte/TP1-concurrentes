@@ -247,7 +247,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = NetworkRechargeableContainer::new(10, 0.2, String::from("container"));
+        let container = NetworkRechargeableContainer::new(10, 0.2, 2, String::from("container"));
         let dispenser = Dispenser::new();
 
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -295,7 +295,7 @@ mod dispenser_test {
     ) {
         let units = 3;
 
-        let container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let container = NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let dispenser = Dispenser::new();
         let _ = container.extract(4);
         let dispenser_result = dispenser.dispense_resource(units, &container);
@@ -351,7 +351,8 @@ mod dispenser_test {
             1,
         );
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -397,7 +398,8 @@ mod dispenser_test {
         );
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
         let _ = cocoa_container.extract(5);
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -443,7 +445,8 @@ mod dispenser_test {
             1,
         );
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -490,7 +493,8 @@ mod dispenser_test {
         let _ = foam_container.extract(5);
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
 
         let dispenser = Dispenser::new();
         let dispenser_result = dispenser.prepare_order(
@@ -536,7 +540,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -584,7 +589,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -632,7 +638,8 @@ mod dispenser_test {
         let _ = foam_container.extract(4);
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -678,7 +685,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -725,7 +733,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -772,7 +781,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();
@@ -819,7 +829,8 @@ mod dispenser_test {
         );
 
         let cocoa_container = UnrechargeableContainer::new(5, 0.2, String::from("container"));
-        let water_container = NetworkRechargeableContainer::new(5, 0.2, String::from("container"));
+        let water_container =
+            NetworkRechargeableContainer::new(5, 0.2, 2, String::from("container"));
         let _ = water_container.extract(5);
 
         let dispenser = Dispenser::new();

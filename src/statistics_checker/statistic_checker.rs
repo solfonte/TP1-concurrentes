@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::coffee_maker_components::coffee_maker::CoffeeMaker;
+use crate::coffee_maker_components::coffee_machine::CoffeeMachine;
 
 pub struct StatisticsChecker {
-    coffee_maker: Arc<CoffeeMaker>,
+    coffee_maker: Arc<CoffeeMachine>,
 }
 
 impl StatisticsChecker {
@@ -28,7 +28,7 @@ impl StatisticsChecker {
         statistics.2
     }
 
-    pub fn new(coffee_maker: Arc<CoffeeMaker>) -> Self {
+    pub fn new(coffee_maker: Arc<CoffeeMachine>) -> Self {
         Self { coffee_maker }
     }
 }

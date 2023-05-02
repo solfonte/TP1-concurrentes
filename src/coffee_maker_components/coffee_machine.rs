@@ -55,7 +55,7 @@ fn start_dispenser(
     })
 }
 
-pub struct CoffeeMaker {
+pub struct CoffeeMachine {
     grain_container: Arc<ProviderContainer>,
     milk_container: Arc<ProviderContainer>,
     ground_coffee_container: Arc<RechargeableContainer>,
@@ -67,7 +67,7 @@ pub struct CoffeeMaker {
     power_monitor: Arc<(Mutex<SecurePowerState>, Condvar)>,
 }
 
-impl CoffeeMaker {
+impl CoffeeMachine {
     pub fn new(configuration: CoffeeMakerConfiguration) -> Self {
         let grain_container = Arc::new(ProviderContainer::new(
             configuration.grain_capacity,
@@ -101,6 +101,7 @@ impl CoffeeMaker {
         let water_container = Arc::new(NetworkRechargeableContainer::new(
             configuration.water_capacity,
             configuration.amount_percentage_alert,
+            configuration.heated_water_recharge_rate,
             String::from("Water container"),
         ));
         Self {
@@ -235,7 +236,7 @@ impl CoffeeMaker {
 mod coffee_maker_test {
     use crate::{
         coffee_maker_components::{
-            coffee_maker::CoffeeMaker, configuration::CoffeeMakerConfiguration,
+            coffee_machine::CoffeeMachine, configuration::CoffeeMakerConfiguration,
             container::MockContainer,
         },
         statistics_checker::statistic::Statistic,
@@ -250,7 +251,7 @@ mod coffee_maker_test {
             amount_left: 1,
         });
 
-        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration {
+        let coffee_maker = CoffeeMachine::new(CoffeeMakerConfiguration {
             grain_capacity: 1,
             ground_coffee_capacity: 1,
             milk_capacity: 1,
@@ -277,7 +278,7 @@ mod coffee_maker_test {
 
     #[test]
     fn test02_when_asking_if_the_coffe_maker_just_instantiated_is_on_returns_true() {
-        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration {
+        let coffee_maker = CoffeeMachine::new(CoffeeMakerConfiguration {
             grain_capacity: 1,
             ground_coffee_capacity: 1,
             milk_capacity: 1,
@@ -296,7 +297,7 @@ mod coffee_maker_test {
 
     #[test]
     fn test03_when_asking_if_the_coffe_maker_just_turned_off_is_on_returns_false() {
-        let coffee_maker = CoffeeMaker::new(CoffeeMakerConfiguration {
+        let coffee_maker = CoffeeMachine::new(CoffeeMakerConfiguration {
             grain_capacity: 1,
             ground_coffee_capacity: 1,
             milk_capacity: 1,

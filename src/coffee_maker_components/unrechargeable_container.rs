@@ -71,12 +71,14 @@ impl UnrechargeableContainer {
             Ok(extraction)
         };
 
-        if !system.already_alerted_amount_percentage() && self.check_alert_on_amount_left_percentage(
-            &self.name,
-            system.get_amount_consumed(),
-            self.max_capacity,
-            self.amount_percentage_alert,
-        ){
+        if !system.already_alerted_amount_percentage()
+            && self.check_alert_on_amount_left_percentage(
+                &self.name,
+                system.get_amount_consumed(),
+                self.max_capacity,
+                self.amount_percentage_alert,
+            )
+        {
             system.set_already_alerted_amount_percentage(true);
         }
 

@@ -80,12 +80,14 @@ impl ProviderContainer {
 
         system.increase_amount_consumed(amount_extracted);
 
-        if !system.already_alerted_amount_percentage() && self.check_alert_on_amount_left_percentage(
-            &self.name,
-            system.get_amount_left(),
-            self.max_capacity,
-            self.amount_percentage_alert,
-        ){
+        if !system.already_alerted_amount_percentage()
+            && self.check_alert_on_amount_left_percentage(
+                &self.name,
+                system.get_amount_left(),
+                self.max_capacity,
+                self.amount_percentage_alert,
+            )
+        {
             system.set_already_alerted_amount_percentage(true);
         }
 

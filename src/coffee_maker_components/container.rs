@@ -28,7 +28,7 @@ pub trait Container {
         amount_left: u32,
         max_capacity: u32,
         amount_percentage_alert: f32,
-    ) -> bool{
+    ) -> bool {
         if self.amount_left_percentage_below_line(
             amount_left,
             max_capacity,
@@ -37,7 +37,7 @@ pub trait Container {
             println!(
                 "[{}] amount left percentage below {}%",
                 name,
-                amount_percentage_alert * 100 as f32
+                amount_percentage_alert * 100_f32
             );
             return true;
         }

@@ -3,7 +3,7 @@ mod order_management;
 mod order_taker_robot;
 mod statistics_checker;
 
-use coffee_maker_components::coffee_maker::CoffeeMaker;
+use coffee_maker_components::coffee_machine::CoffeeMachine;
 use coffee_maker_components::configuration::{CoffeeMakerConfiguration, ConfigurationReader};
 use order_management::order_system::OrderSystem;
 use order_taker_robot::robot::Robot;
@@ -48,19 +48,18 @@ fn main() {
             return;
         }
     }
-    let configuration: CoffeeMakerConfiguration;
     println!("{}", configs_file);
     let configuration_reader = ConfigurationReader::new(configs_file);
 
-    match configuration_reader.read_configuration() {
-        Ok(c) => configuration = c,
+    let configuration: CoffeeMakerConfiguration = match configuration_reader.read_configuration() {
+        Ok(c) => c,
         Err(msg) => {
             println!("[Error] While reading configuration: {}", msg);
             return;
         }
-    }
+    };
 
-    let coffee_maker = Arc::new(CoffeeMaker::new(configuration));
+    let coffee_maker = Arc::new(CoffeeMachine::new(configuration));
     let orders_monitor_pair = Arc::new((Mutex::new(OrderSystem::new()), Condvar::new()));
     let mut robot = Robot::new(orders_file);
 

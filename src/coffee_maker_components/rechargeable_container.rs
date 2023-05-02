@@ -78,8 +78,11 @@ impl RechargeableContainer {
 
         let amount_left = system.get_amount_left();
         if amount_left < extraction {
-            let amount_to_recharge = (self.max_capacity - amount_left) / self.recharging_rate;
-            let recharging_result = self.recharger_controller.recharge(amount_to_recharge);
+            let amount_to_recharge =
+                ((self.max_capacity - amount_left) as f32 / self.recharging_rate as f32).floor();
+            let recharging_result = self
+                .recharger_controller
+                .recharge(amount_to_recharge as u32);
             if let Ok(amount_returned) = recharging_result {
                 system.recharge(amount_returned * self.recharging_rate);
                 system.set_already_alerted_amount_percentage(false);

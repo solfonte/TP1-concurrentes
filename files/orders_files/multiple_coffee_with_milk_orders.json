@@ -1,112 +1,112 @@
 [
     {
         "order_number": 0,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 1,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 2,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 3,
-        "coffee_amount": 5,
+        "coffee_amount": 10,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 4,
-        "coffee_amount": 5,
+        "coffee_amount": 7,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 5,
-        "coffee_amount": 5,
+        "coffee_amount": 10,
         "cocoa_amount": 0,
-        "milk_foam_amount": 5,
+        "milk_foam_amount": 3,
         "water_amount": 3
     },
     {
         "order_number": 6,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
-        "milk_foam_amount": 5,
+        "milk_foam_amount": 2,
         "water_amount": 3
     },
     {
         "order_number": 7,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },{
         "order_number": 8,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 9,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 10,
-        "coffee_amount": 5,
+        "coffee_amount": 10,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 11,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },{
         "order_number": 12,
-        "coffee_amount": 5,
+        "coffee_amount": 9,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 13,
-        "coffee_amount": 5,
+        "coffee_amount": 7,
         "cocoa_amount": 0,
         "milk_foam_amount": 5,
         "water_amount": 3
     },
     {
         "order_number": 14,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
-        "milk_foam_amount": 5,
+        "milk_foam_amount": 4,
         "water_amount": 3
     },
     {
         "order_number": 15,
-        "coffee_amount": 5,
+        "coffee_amount": 8,
         "cocoa_amount": 0,
-        "milk_foam_amount": 5,
+        "milk_foam_amount": 6,
         "water_amount": 3
     }
 ]

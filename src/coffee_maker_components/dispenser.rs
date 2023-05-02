@@ -72,6 +72,7 @@ impl Dispenser {
                 Ok(amount) => {
                     if amount == 0 {
                         ingredient_not_available = true;
+                        println!("coffe not available for order {}", order.get_order_number());
                     }
                 }
                 Err(msg) => {
@@ -87,6 +88,7 @@ impl Dispenser {
                 Ok(amount) => {
                     if amount == 0 {
                         ingredient_not_available = true;
+                        println!("cocoa not available for order {}", order.get_order_number())
                     }
                 }
                 Err(msg) => {
@@ -101,6 +103,8 @@ impl Dispenser {
             match foam_result {
                 Ok(amount) => {
                     if amount == 0 {
+                        println!("foam not available");
+
                         ingredient_not_available = true;
                     }
                 }
@@ -116,6 +120,8 @@ impl Dispenser {
             match water_result {
                 Ok(amount) => {
                     if amount == 0 {
+                        println!("water not available");
+
                         ingredient_not_available = true;
                     }
                 }

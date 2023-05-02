@@ -6,8 +6,8 @@
     "cocoa_capacity": 30, 
     "water_capacity": 30, 
     "dispenser_amount": 10,
-    "coffee_ground_recharge_rate": 10,
-    "milk_foam_recharge_rate": 5,
+    "coffee_ground_recharge_rate": 3,
+    "milk_foam_recharge_rate": 3,
     "heated_water_recharge_rate": 2,
     "amount_percentage_alert": 0.2
 }

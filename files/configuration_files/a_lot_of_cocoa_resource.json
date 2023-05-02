@@ -1,0 +1,13 @@
+{
+    "grain_capacity": 30,
+    "ground_coffee_capacity": 30, 
+    "milk_capacity": 30, 
+    "milk_foam_capacity": 30, 
+    "cocoa_capacity": 30000, 
+    "water_capacity": 30, 
+    "dispenser_amount": 10,
+    "coffee_ground_recharge_rate": 10,
+    "milk_foam_recharge_rate": 5,
+    "heated_water_recharge_rate": 2,
+    "amount_percentage_alert": 0.2
+}

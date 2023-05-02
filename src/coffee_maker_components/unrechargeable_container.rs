@@ -74,7 +74,7 @@ impl UnrechargeableContainer {
         if !system.already_alerted_amount_percentage()
             && self.check_alert_on_amount_left_percentage(
                 &self.name,
-                system.get_amount_consumed(),
+                system.get_amount_left(),
                 self.max_capacity,
                 self.amount_percentage_alert,
             )

@@ -72,7 +72,6 @@ impl Dispenser {
                 Ok(amount) => {
                     if amount == 0 {
                         ingredient_not_available = true;
-                        println!("coffe not available for order {}", order.get_order_number());
                     }
                 }
                 Err(msg) => {
@@ -82,13 +81,12 @@ impl Dispenser {
         }
 
         let cocoa_amount_required = order.get_cocoa_amount();
-        if cocoa_amount_required > 0 {
+        if cocoa_amount_required > 0 && !ingredient_not_available {
             let cocoa_result = self.dispense_resource(cocoa_amount_required, cocoa_container);
             match cocoa_result {
                 Ok(amount) => {
                     if amount == 0 {
                         ingredient_not_available = true;
-                        println!("cocoa not available for order {}", order.get_order_number())
                     }
                 }
                 Err(msg) => {
@@ -98,13 +96,11 @@ impl Dispenser {
         }
 
         let milk_foam_amount_required = order.get_milk_foam_amount();
-        if milk_foam_amount_required > 0 {
+        if milk_foam_amount_required > 0 && !ingredient_not_available {
             let foam_result = self.dispense_resource(milk_foam_amount_required, foam_container);
             match foam_result {
                 Ok(amount) => {
                     if amount == 0 {
-                        println!("foam not available");
-
                         ingredient_not_available = true;
                     }
                 }
@@ -115,13 +111,11 @@ impl Dispenser {
         }
 
         let water_amount_required = order.get_water_amount();
-        if water_amount_required > 0 {
+        if water_amount_required > 0 && !ingredient_not_available {
             let water_result = self.dispense_resource(water_amount_required, water_container);
             match water_result {
                 Ok(amount) => {
                     if amount == 0 {
-                        println!("water not available");
-
                         ingredient_not_available = true;
                     }
                 }

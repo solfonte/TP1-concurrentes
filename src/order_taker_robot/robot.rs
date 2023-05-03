@@ -57,7 +57,10 @@ impl Robot {
                 self.queue_orders(orders, order_queue_monitor);
                 Ok(())
             }
-            Err(error_msg) => Err(error_msg),
+            Err(error_msg) => {
+                self.queue_orders(Vec::new(), order_queue_monitor);
+                Err(error_msg)
+            },
         }
     }
 }

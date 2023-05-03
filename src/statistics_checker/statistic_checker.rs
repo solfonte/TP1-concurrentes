@@ -21,8 +21,6 @@ impl StatisticsChecker {
 
         if !statistics.2 {
             println!("Coffee machine is off");
-        } else {
-            println!("esta on");
         }
 
         statistics.2

@@ -154,7 +154,7 @@ impl CoffeeMachine {
         dispenser_handles
     }
 
-    fn turn_off(&self) {
+    pub fn turn_off(&self) {
         if let Ok(guard) = self.power_monitor.0.lock() {
             if let Ok(mut power_state) = self.power_monitor.1.wait_while(guard, |state| state.busy)
             {

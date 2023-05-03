@@ -44,11 +44,9 @@ fn main() {
             configs_file = files_pair.1;
         }
         None => {
-            println!("No leyo");
             return;
         }
     }
-    println!("{}", configs_file);
     let configuration_reader = ConfigurationReader::new(configs_file);
 
     let configuration: CoffeeMakerConfiguration = match configuration_reader.read_configuration() {
@@ -70,15 +68,15 @@ fn main() {
         coffee_maker_clone.turn_on(orders_monitor_pair_clone);
     });
 
+    let coffee_maker_for_statistics_clone = coffee_maker.clone();
     let statistics_handle = thread::spawn(move || {
-        let statistics_checker = StatisticsChecker::new(coffee_maker);
+        let statistics_checker = StatisticsChecker::new(coffee_maker_for_statistics_clone);
 
         let mut continue_printing_statistics = true;
 
         while continue_printing_statistics {
             thread::sleep(Duration::from_millis(1000));
             continue_printing_statistics = statistics_checker.print_statistics();
-            //TODO:El sistema debe alertar por consola cuando los contenedores de granos, leche y cacao se encuentran por debajo de X% de capacidad.
         }
     });
 
@@ -88,13 +86,14 @@ fn main() {
         match robot.take_orders(&orders_monitor_pair_clone_robot) {
             Ok(_) => {}
             Err(error_msg) => {
-                println!("[Error while taking the orders]: {}", error_msg)
+                println!("[Error while taking the orders]: {}", error_msg);
+                coffee_maker.turn_off();
             }
         }
     });
 
     if coffe_make_handle.join().is_ok() {
-        println!("Coffee maker turned off");
+        println!("Coffee machine turned off");
     }
     let _ = order_preparation_handle.join();
     let _ = statistics_handle.join();

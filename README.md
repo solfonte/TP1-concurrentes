@@ -7,7 +7,7 @@
     - [Decisiones de implementación y observaciones](#decisiones-de-implementación-y-observaciones)
   - [Formatos de los archivos](#formatos-de-los-archivos)
     - [Archivo de configuracion](#archivo-de-configuracion)
-    - [Archivo de ordenes](#archivo-de-ordenes)
+    - [Archivo de órdenes](#archivo-de-órdenes)
     - [Estructuras](#estructuras)
   - [Casos de uso](#casos-de-uso)
     - [Caso de uso 1](#caso-de-uso-1)
@@ -56,31 +56,31 @@ Consiste en un unico documento donde este tiene que tener los campos que se corr
 
 ```json
 {
-    "grain_capacity"                -> Capacidad máxima de granos de café en el contenedor
-    "ground_coffee_capacity"        -> Capacidad máxima de café molido en el contenedor
-    "milk_capacity"                 -> Capacidad máxima de leche en el contenedor
-    "milk_foam_capacity"            -> Capacidad máxima de espuma en el contenedor
-    "cocoa_capacity"                -> Capacidad máxima de cacao en el contenedor
-    "water_capacity"                -> Capacidad máxima de agua en el contenedor
-    "dispenser_amount"              -> Cantidad de dispensers
-    "coffee_ground_recharge_rate"   -> Cantidad de unidades de granos de café molidos que se obtienen de una unidad de grano de café
-    "milk_foam_recharge_rate"       -> Cantidad de unidades de espuma que se obtienen de una unidad de leche
-    "heated_water_recharge_rate"    -> Cantidad de unidades de agua caliente que se obtienen de la red por milisegundo
-    "amount_percentage_alert"       -> Porcentaje por debajo de la capacidad máxima a la que se debe encontrar un contenedor para  alertar por consola
+    "grain_capacity"                // Capacidad máxima de granos de café en el contenedor
+    "ground_coffee_capacity"        // Capacidad máxima de café molido en el contenedor
+    "milk_capacity"                 // Capacidad máxima de leche en el contenedor
+    "milk_foam_capacity"            // Capacidad máxima de espuma en el contenedor
+    "cocoa_capacity"                // Capacidad máxima de cacao en el contenedor
+    "water_capacity"                // Capacidad máxima de agua en el contenedor
+    "dispenser_amount"              // Cantidad de dispensers
+    "coffee_ground_recharge_rate"   // Cantidad de unidades de granos de café molidos que se obtienen de una unidad de grano de café
+    "milk_foam_recharge_rate"       // Cantidad de unidades de espuma que se obtienen de una unidad de leche
+    "heated_water_recharge_rate"    // Cantidad de unidades de agua caliente que se obtienen de la red por milisegundo
+    "amount_percentage_alert"       // Porcentaje por debajo de la capacidad máxima a la que se debe encontrar un contenedor para  alertar por consola
 }
 ```
 
-### Archivo de ordenes 
+### Archivo de órdenes 
 
 Consiste en una lista de órdenes, donde estas tienen que tener los campos que se corresponden con la estructura `Order`. 
 
 ```json
 {
-  "order_number"        -> número de orden
-  "coffee_amount"       -> Cantidad de unidades de cafe molido
-  "cocoa_amount"        -> Cantidad de unidades de cacao
-  "milk_foam_amount"    -> Cantidad de unidades de espuma
-  "water_amount"        -> Cantidad de unidades de agua
+  "order_number"        // número de orden
+  "coffee_amount"       // Cantidad de unidades de cafe molido
+  "cocoa_amount"        // Cantidad de unidades de cacao
+  "milk_foam_amount"    // Cantidad de unidades de espuma
+  "water_amount"        // Cantidad de unidades de agua
 }
 ```
 

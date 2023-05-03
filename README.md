@@ -5,10 +5,10 @@
   - [Diseño de la solución](#diseño-de-la-solución)
     - [Supuestos](#supuestos)
     - [Decisiones de implementación y observaciones](#decisiones-de-implementación-y-observaciones)
+    - [Estructuras](#estructuras)
   - [Formatos de los archivos](#formatos-de-los-archivos)
     - [Archivo de configuracion](#archivo-de-configuracion)
     - [Archivo de órdenes](#archivo-de-órdenes)
-    - [Estructuras](#estructuras)
   - [Casos de uso](#casos-de-uso)
     - [Caso de uso 1](#caso-de-uso-1)
     - [Caso de uso 2](#caso-de-uso-2)
@@ -45,6 +45,24 @@ El presente trabajo consiste en desarrollar una cafetera que prepara órdenes de
 - Una vez que los dispensers finalizan su ejecución, volviendo al hilo de la cafetera, la cafetera se apaga. Esto me sirvió para determinar que los niveles de los contenedores ya no iban a cambiar para asi finalizar la muestra de estadísticas por pantalla. Una vez que se apaga se retorna igualmente las estadisticas para mostrar los niveles finales.
 - Cuando se tienen que imprimir que los niveles disponibles de recurso estan por debajo de X%, se decidió que se imprime una vez pero que si este se recarga se puede volver a imprimir en caso de que vuelva a bajar la cantidad de recurso por debajo de X%
 - Los dispensers toman de manera secuencial los recursos y siempre en el mismo orden. Cuando toma el primer recurso (café), se empieza a llevar un registro de si este recurso, o alguno de los siguientes, esta disponible para preparar la orden con la variable `ingredient_not_available`. En caso de que no este disponible, se settea en true esta variable y la misma se utiliza para llevar un registro de si se pudo completar la orden o no y para que, en caso de que algún recurso no este disponible, no seguir tomando recursos de los siguientes contenedores (para que puedan ser aprovechados por otras órdenes). Finalizando el trabajo práctico, me di cuenta de que siempre se va a tomar café (en caso de estar disponible), no permitiendo aprovecharlo si no hay de los siguientes (cacao o espuma). Una posible mejora seria decidir el orden en que se toman los recursos de manera mas justa o de manera aleatoria, para que no se tome siempre cafe primero. 
+- Si bien algunas estructuras tienen mas de una responsabilidad, se intentó refactorizar pero al tener dificultad con el lenguaje se decició priorizar finalizar con el modelo. 
+
+### Estructuras
+Explicación de las principales estructuras del modelo: 
+
+La manera en la que se modelo el diseño es la siguiente. Se tiene una instancia de una cafetera, que corresponde a la estructura de `CoffeeMachine`, y esta al iniciar es la que inicializa los N `Dispensers`, que obtienen los recursos de los contenedores. Para implementar los contenedores, se desarrollo un `trait Container` que lo implementan 4 tipos de contenedores:
+
+`ProviderContainer`: este tipo de contenedor es el que provee de los recursos cuando se hace necesario recargar. Se utiliza para los contenedores de granos y leche. 
+
+`UnrechargeableContainer`: este tipo de contenedor es el que no se puede recargar. Se utiliza para el contenedor de cacao. 
+
+`RechargeableContainer`: este tipo de contenedor es el que si puede recargarse, y se recarga mediante el llamado al controlador `ContainerRechargerController` que es el que se comunica con el contenedor que tiene el recurso necesario. Se utiliza para los contenedores de espuma de leche y de cafe molido. 
+
+`NetworkRechargeableContainer`: este tipo de contenedor es el que se recarga de la red. No requiere de otro contenedor ni de un controlador. Se utiliza para el contenedor de agua. 
+
+Luego, se tiene la estructura que imprime las estadisticas `StatisticsChecker`, obteniéndolas de la cafetera. 
+
+Además, se agregaron las estructuras `Order` y `CoffeeMakerConfiguration` para poder deserializar los archivos de órdenes y configuración respectivamente. 
 
 ## Formatos de los archivos
 
@@ -83,10 +101,6 @@ Consiste en una lista de órdenes, donde estas tienen que tener los campos que s
   "water_amount"        // Cantidad de unidades de agua
 }
 ```
-
-### Estructuras
-
-Las estructuras se encuentran documentadas en el código. Para acceder a las mismas se debera correr `cargo doc --open`
 
 ## Casos de uso
 

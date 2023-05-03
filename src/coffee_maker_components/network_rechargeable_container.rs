@@ -8,7 +8,6 @@ use crate::statistics_checker::statistic::Statistic;
 
 use super::{container::Container, container_system::ContainerSystem};
 
-///comment de la estructura
 pub struct NetworkRechargeableContainer {
     max_capacity: u32,
     amount_percentage_alert: f32,

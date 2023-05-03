@@ -19,7 +19,7 @@ pub struct RechargeableContainer {
 impl Container for RechargeableContainer {
     fn extract(&self, extraction: u32) -> Result<u32, String> {
         let mut result: Result<u32, String> =
-            Err(String::from("No se pudo extraer del contenedor"));
+            Err(String::from("Could not extract from container"));
         if let Ok(guard) = self.pair.0.lock() {
             if let Ok(mut system) = self.pair.1.wait_while(guard, |state| state.is_busy()) {
                 result = self.extract_amount(&mut system, extraction);
